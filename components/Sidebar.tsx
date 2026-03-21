@@ -4,7 +4,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Plus, Inbox, Download, Trash2, Pencil, Archive, ArchiveX } from "lucide-react";
+import { Plus, Inbox, Download, Bookmark, Trash2, Pencil, Archive, ArchiveX } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -49,6 +49,18 @@ export function Sidebar() {
         >
           <Download className="h-4 w-4" />
           Export
+        </Link>
+        <Link
+          href="/bookmarklet"
+          className={cn(
+            "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+            pathname === "/bookmarklet"
+              ? "bg-slate-100 text-slate-900"
+              : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+          )}
+        >
+          <Bookmark className="h-4 w-4" />
+          Bookmarklet
         </Link>
 
         <div className="pt-3 pb-1 px-3">
