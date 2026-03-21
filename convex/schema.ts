@@ -29,6 +29,7 @@ export default defineSchema({
     .index("by_userId_status", ["userId", "status"])
     .index("by_collectionId", ["collectionId"])
     .index("by_userId", ["userId"])
+    .index("by_userId_url", ["userId", "url"])
     .searchIndex("search_entries", {
       searchField: "title",
       filterFields: ["userId"],

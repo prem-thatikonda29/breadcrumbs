@@ -12,7 +12,14 @@ export const create = mutation({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
-    return await ctx.db.insert("entries", {
+
+    const existing = await ctx.db
+      .query("entries")
+      .withIndex("by_userId_url", (q) => q.eq("userId", userId).eq("url", args.url))
+      .first();
+    if (existing) return { id: existing._id, alreadyExists: true };
+
+    const id = await ctx.db.insert("entries", {
       userId,
       collectionId: args.collectionId,
       title: args.title,
@@ -21,6 +28,7 @@ export const create = mutation({
       dateAdded: Date.now(),
       notes: args.notes,
     });
+    return { id, alreadyExists: false };
   },
 });
 
