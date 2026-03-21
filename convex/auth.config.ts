@@ -1,7 +1,7 @@
 export default {
   providers: [
     {
-      domain: "https://festive-porcupine-882.eu-west-1.convex.site",
+      domain: process.env.CONVEX_SITE_URL,
       applicationID: "convex",
     },
   ],
