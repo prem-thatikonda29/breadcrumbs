@@ -25,10 +25,13 @@ import {
   Pencil,
   StickyNote,
   RotateCcw,
+  Download,
+  Copy,
+  Check,
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { cn, formatDate, formatDateTime, getDomain } from "@/lib/utils";
+import { cn, formatDate, formatDateTime, getDomain, starsFromRating } from "@/lib/utils";
 
 export default function EntryPage() {
   const params = useParams();
@@ -44,6 +47,7 @@ export default function EntryPage() {
   const updateLearning = useMutation(api.learnings.update);
   const removeLearning = useMutation(api.learnings.remove);
 
+  const [copied, setCopied] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [addContent, setAddContent] = useState("");
   const [addRating, setAddRating] = useState(0);
@@ -73,6 +77,43 @@ export default function EntryPage() {
   }
 
   const collection = collections?.find((c) => c._id === entry?.collectionId);
+
+  function buildMarkdown() {
+    if (!entry || !learnings) return "";
+    const lines: string[] = [
+      `# ${entry.title}`,
+      "",
+      `**URL:** ${entry.url}`,
+      `**Added:** ${formatDate(entry.dateAdded)}`,
+    ];
+    if (entry.dateExplored) lines.push(`**Explored:** ${formatDate(entry.dateExplored)}`);
+    lines.push("");
+    learnings.forEach((l, i) => {
+      const stars = starsFromRating(l.rating);
+      lines.push(`## Note ${i + 1} — ${formatDate(l.createdAt)}${stars ? ` ${stars}` : ""}`);
+      lines.push("");
+      lines.push(l.content);
+      lines.push("");
+    });
+    return lines.join("\n");
+  }
+
+  async function handleCopy() {
+    await navigator.clipboard.writeText(buildMarkdown());
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  function handleDownload() {
+    const md = buildMarkdown();
+    const blob = new Blob([md], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${entry!.title.toLowerCase().replace(/\s+/g, "-")}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
   async function handleAddLearning(e: React.FormEvent) {
     e.preventDefault();
@@ -126,22 +167,44 @@ export default function EntryPage() {
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-2xl mx-auto px-6 py-8">
           {/* Header */}
-          <div className="flex items-center gap-3 mb-6">
-            <Link href={entry.collectionId ? `/collections/${entry.collectionId}` : "/"}>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-            </Link>
-            {collection && (
-              <Link href={`/collections/${collection._id}`}>
-                <span
-                  className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium text-white"
-                  style={{ backgroundColor: collection.color ?? "#94a3b8" }}
-                >
-                  {collection.name}
-                </span>
+          <div className="flex items-center justify-between gap-3 mb-6">
+            <div className="flex items-center gap-3">
+              <Link href={entry.collectionId ? `/collections/${entry.collectionId}` : "/"}>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
               </Link>
-            )}
+              {collection && (
+                <Link href={`/collections/${collection._id}`}>
+                  <span
+                    className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium text-white"
+                    style={{ backgroundColor: collection.color ?? "#94a3b8" }}
+                  >
+                    {collection.name}
+                  </span>
+                </Link>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCopy}
+                disabled={!learnings || learnings.length === 0}
+              >
+                {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                {copied ? "Copied!" : "Copy"}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDownload}
+                disabled={!learnings || learnings.length === 0}
+              >
+                <Download className="h-4 w-4" />
+                Download .md
+              </Button>
+            </div>
           </div>
 
           {/* Entry info */}
