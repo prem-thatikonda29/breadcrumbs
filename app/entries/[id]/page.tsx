@@ -127,7 +127,7 @@ export default function EntryPage() {
         <div className="max-w-2xl mx-auto px-6 py-8">
           {/* Header */}
           <div className="flex items-center gap-3 mb-6">
-            <Link href={`/collections/${entry.collectionId}`}>
+            <Link href={entry.collectionId ? `/collections/${entry.collectionId}` : "/"}>
               <Button variant="ghost" size="icon" className="h-8 w-8">
                 <ArrowLeft className="h-4 w-4" />
               </Button>

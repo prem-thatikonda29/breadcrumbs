@@ -6,7 +6,7 @@ export const create = mutation({
   args: {
     title: v.string(),
     url: v.string(),
-    collectionId: v.id("collections"),
+    collectionId: v.optional(v.id("collections")),
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {

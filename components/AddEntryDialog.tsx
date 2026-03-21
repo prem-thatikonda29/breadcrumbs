@@ -52,12 +52,12 @@ export function AddEntryDialog({ defaultCollectionId }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!url.trim() || !collectionId) return;
+    if (!url.trim()) return;
     const finalTitle = title.trim() || url.trim();
     await createEntry({
       title: finalTitle,
       url: url.trim(),
-      collectionId: collectionId as Id<"collections">,
+      collectionId: collectionId ? collectionId as Id<"collections"> : undefined,
       notes: notes.trim() || undefined,
     });
     setTitle("");
@@ -114,7 +114,7 @@ export function AddEntryDialog({ defaultCollectionId }: Props) {
             />
           </div>
           <div>
-            <label className="text-sm text-slate-600 mb-1 block">Collection *</label>
+            <label className="text-sm text-slate-600 mb-1 block">Collection <span className="text-slate-400">(optional)</span></label>
 
             {!creatingNew ? (
               <div className="space-y-2">
@@ -217,7 +217,7 @@ export function AddEntryDialog({ defaultCollectionId }: Props) {
           <Button
             type="submit"
             className="w-full"
-            disabled={!url.trim() || !collectionId}
+            disabled={!url.trim()}
           >
             Add Entry
           </Button>

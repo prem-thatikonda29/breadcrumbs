@@ -11,12 +11,13 @@ export default defineSchema({
     color: v.optional(v.string()),
     description: v.optional(v.string()),
     iconStorageId: v.optional(v.id("_storage")),
+    archived: v.optional(v.boolean()),
     createdAt: v.number(),
   }).index("by_userId", ["userId"]),
 
   entries: defineTable({
     userId: v.id("users"),
-    collectionId: v.id("collections"),
+    collectionId: v.optional(v.id("collections")),
     title: v.string(),
     url: v.string(),
     status: v.union(v.literal("not_explored"), v.literal("explored")),

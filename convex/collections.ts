@@ -2,6 +2,15 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
+async function withIconUrls(ctx: any, collections: any[]) {
+  return await Promise.all(
+    collections.map(async (col: any) => ({
+      ...col,
+      iconUrl: col.iconStorageId ? await ctx.storage.getUrl(col.iconStorageId) : null,
+    }))
+  );
+}
+
 export const list = query({
   args: {},
   handler: async (ctx) => {
@@ -12,12 +21,45 @@ export const list = query({
       .withIndex("by_userId", (q) => q.eq("userId", userId))
       .order("desc")
       .collect();
-    return await Promise.all(
-      collections.map(async (col) => ({
-        ...col,
-        iconUrl: col.iconStorageId ? await ctx.storage.getUrl(col.iconStorageId) : null,
-      }))
-    );
+    const active = collections.filter((c) => !c.archived);
+    return await withIconUrls(ctx, active);
+  },
+});
+
+export const listArchived = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return [];
+    const collections = await ctx.db
+      .query("collections")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .order("desc")
+      .collect();
+    const archived = collections.filter((c) => c.archived === true);
+    return await withIconUrls(ctx, archived);
+  },
+});
+
+export const archive = mutation({
+  args: { collectionId: v.id("collections") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const collection = await ctx.db.get(args.collectionId);
+    if (!collection || collection.userId !== userId) throw new Error("Not found");
+    await ctx.db.patch(args.collectionId, { archived: true });
+  },
+});
+
+export const unarchive = mutation({
+  args: { collectionId: v.id("collections") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const collection = await ctx.db.get(args.collectionId);
+    if (!collection || collection.userId !== userId) throw new Error("Not found");
+    await ctx.db.patch(args.collectionId, { archived: false });
   },
 });
 
