@@ -76,8 +76,6 @@ export default function EntryPage() {
     setEditingEntry(false);
   }
 
-  const collection = collections?.find((c) => c._id === entry?.collectionId);
-
   function buildMarkdown() {
     if (!entry || !learnings) return "";
     const lines: string[] = [
@@ -105,12 +103,13 @@ export default function EntryPage() {
   }
 
   function handleDownload() {
+    if (!entry) return;
     const md = buildMarkdown();
     const blob = new Blob([md], { type: "text/markdown" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${entry!.title.toLowerCase().replace(/\s+/g, "-")}.md`;
+    a.download = `${entry.title.toLowerCase().replace(/\s+/g, "-")}.md`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -160,6 +159,8 @@ export default function EntryPage() {
       </div>
     );
   }
+
+  const collection = collections?.find((c) => c._id === entry.collectionId);
 
   return (
     <div className="flex h-screen overflow-hidden">
