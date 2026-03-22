@@ -61,7 +61,7 @@ function SortableRow({
       <button
         {...attributes}
         {...listeners}
-        className="shrink-0 cursor-grab active:cursor-grabbing text-slate-300 hover:text-slate-500 transition-colors p-1"
+        className="shrink-0 cursor-grab active:cursor-grabbing text-[#D4D3D0] hover:text-[#787774] transition-colors p-1"
         title="Drag to reorder"
       >
         <GripVertical className="h-4 w-4" />
@@ -150,7 +150,7 @@ export default function CollectionPage() {
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
           <div className="flex items-center gap-2 sm:gap-3 mb-6">
-            <Link href="/">
+            <Link href="/app">
               <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
                 <ArrowLeft className="h-4 w-4" />
               </Button>
@@ -171,14 +171,14 @@ export default function CollectionPage() {
                 )
               )}
               <div className="min-w-0">
-                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight truncate">
+                <h1 className="text-xl sm:text-2xl font-bold text-[#111111] leading-tight truncate">
                   {collection?.name ?? "Collection"}
                 </h1>
                 {collection?.description && (
-                  <p className="text-sm text-slate-500 truncate">{collection.description}</p>
+                  <p className="text-sm text-[#787774] truncate">{collection.description}</p>
                 )}
               </div>
-              <span className="text-slate-400 text-sm shrink-0">
+              <span className="text-[#BBBBB8] text-sm shrink-0">
                 ({(entries?.length ?? 0)})
               </span>
             </div>
@@ -187,13 +187,13 @@ export default function CollectionPage() {
             </div>
           </div>
 
-          <div className="flex gap-1 mb-6 border-b border-slate-200">
+          <div className="flex gap-1 mb-6 border-b border-[#EAEAEA]">
             <button
               onClick={() => { setSection("unexplored"); clearSelection(); }}
               className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
                 section === "unexplored"
-                  ? "border-slate-900 text-slate-900"
-                  : "border-transparent text-slate-500 hover:text-slate-700"
+                  ? "border-[#111111] text-[#111111]"
+                  : "border-transparent text-[#787774] hover:text-[#111111]"
               }`}
             >
               To Explore ({unexplored.length})
@@ -202,8 +202,8 @@ export default function CollectionPage() {
               onClick={() => { setSection("explored"); clearSelection(); }}
               className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
                 section === "explored"
-                  ? "border-slate-900 text-slate-900"
-                  : "border-transparent text-slate-500 hover:text-slate-700"
+                  ? "border-[#111111] text-[#111111]"
+                  : "border-transparent text-[#787774] hover:text-[#111111]"
               }`}
             >
               Explored ({explored.length})
@@ -212,14 +212,14 @@ export default function CollectionPage() {
 
           {entries === undefined ? (
             <div className="flex justify-center py-12">
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#EAEAEA] border-t-[#111111]" />
             </div>
           ) : (
             <div className="space-y-2">
               {section === "unexplored" && (
                 <>
                   {unexplored.length === 0 ? (
-                    <div className="text-center py-12 text-slate-400">
+                    <div className="text-center py-12 text-[#BBBBB8]">
                       <FolderOpen className="h-8 w-8 mx-auto mb-2 opacity-40" />
                       <p className="text-sm">Nothing to explore here yet.</p>
                     </div>
@@ -244,7 +244,7 @@ export default function CollectionPage() {
               {section === "explored" && (
                 <>
                   {explored.length === 0 ? (
-                    <div className="text-center py-12 text-slate-400">
+                    <div className="text-center py-12 text-[#BBBBB8]">
                       <p className="text-sm">Nothing explored yet.</p>
                     </div>
                   ) : (
@@ -269,8 +269,8 @@ export default function CollectionPage() {
         {/* Bulk action bar */}
         {selectedCount > 0 && (
           <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] sm:w-auto">
-            <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white shadow-lg px-4 py-3">
-              <span className="text-sm font-medium text-slate-700 mr-1">
+            <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[#EAEAEA] bg-white shadow-lg px-4 py-3">
+              <span className="text-sm font-medium text-[#333333] mr-1">
                 {selectedCount} selected
               </span>
               {section === "unexplored" && (
@@ -308,7 +308,7 @@ export default function CollectionPage() {
               </Button>
               <button
                 onClick={clearSelection}
-                className="text-xs text-slate-400 hover:text-slate-600 ml-1"
+                className="text-xs text-[#BBBBB8] hover:text-[#787774] ml-1"
               >
                 Cancel
               </button>

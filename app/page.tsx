@@ -1,294 +1,579 @@
 "use client";
 
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useAuthActions } from "@convex-dev/auth/react";
-import { useConvexAuth } from "convex/react";
-import { AppShell } from "@/components/AppShell";
-import { EntryCard } from "@/components/EntryCard";
-import { AddEntryDialog } from "@/components/AddEntryDialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { ElasticSwitch } from "@/components/ui/elastic-switch";
-import { Search, BookOpen, LogOut, CheckCircle, Trash2, FolderInput } from "lucide-react";
-import { useState } from "react";
-import Image from "next/image";
+import Link from "next/link";
+import { useRef, useEffect, useState } from "react";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Id } from "@/convex/_generated/dataModel";
+  motion,
+  useScroll,
+  useTransform,
+  useSpring,
+  useMotionValue,
+  useInView,
+  animate,
+} from "framer-motion";
 
-export default function DashboardPage() {
-  const { isAuthenticated, isLoading } = useConvexAuth();
-  const { signIn, signOut } = useAuthActions();
+// ─── Animation presets ────────────────────────────────────────────────────────
 
-  if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
-      </div>
-    );
-  }
+const ease = [0.16, 1, 0.3, 1] as const;
 
-  if (!isAuthenticated) {
-    return <SignInPage onSignIn={() => signIn("google")} />;
-  }
+const fadeUp = {
+  hidden: { opacity: 0, y: 14 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease } },
+};
 
-  return <Dashboard onSignOut={signOut} />;
-}
+const stagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.09, delayChildren: 0.05 } },
+};
 
-function SignInPage({ onSignIn }: { onSignIn: () => void }) {
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+// SVG fractal noise grain — client-only to avoid SSR/hydration mismatch
+function NoiseOverlay() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  if (!mounted) return null;
+
   return (
-    <div className="flex h-screen flex-col items-center justify-center gap-6 bg-slate-50 px-4">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-slate-900">Breadcrumbs</h1>
-        <p className="mt-2 text-slate-500">Track what you explore. Capture what you learn.</p>
-      </div>
-      <Button onClick={onSignIn} size="lg" className="gap-2">
-        <svg className="h-5 w-5" viewBox="0 0 24 24">
-          <path
-            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-            fill="#4285F4"
+    <div
+      aria-hidden="true"
+      className="absolute inset-0 pointer-events-none overflow-hidden"
+      style={{ opacity: 0.04 }}
+    >
+      <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        <filter id="hero-noise">
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="0.75"
+            numOctaves="4"
+            stitchTiles="stitch"
           />
-          <path
-            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-            fill="#34A853"
-          />
-          <path
-            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-            fill="#FBBC05"
-          />
-          <path
-            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-            fill="#EA4335"
-          />
-        </svg>
-        Sign in with Google
-      </Button>
+          <feColorMatrix type="saturate" values="0" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#hero-noise)" />
+      </svg>
     </div>
   );
 }
 
-function Dashboard({ onSignOut }: { onSignOut: () => void }) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showExplored, setShowExplored] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [bulkMoveTarget, setBulkMoveTarget] = useState("");
-
-  const me = useQuery(api.users.me);
-  const collections = useQuery(api.collections.list);
-  const bulkMarkExplored = useMutation(api.entries.bulkMarkExplored);
-  const bulkRemove = useMutation(api.entries.bulkRemove);
-  const bulkMove = useMutation(api.entries.bulkMove);
-  const unexplored = useQuery(api.entries.getUnexplored);
-  const allEntries = useQuery(api.entries.getAll, showExplored ? {} : "skip");
-  const titleResults = useQuery(
-    api.entries.search,
-    searchQuery.trim() ? { query: searchQuery } : "skip"
+function ArrowRight() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" aria-hidden="true">
+      <path
+        d="M1 6.5h11M7.5 2.5l4 4-4 4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
-  const learningEntryIds = useQuery(
-    api.learnings.searchEntryIds,
-    searchQuery.trim() ? { query: searchQuery } : "skip"
-  );
-  const allForSearch = useQuery(
-    api.entries.getAll,
-    searchQuery.trim() ? {} : "skip"
-  );
+}
 
-  const searchResults = searchQuery.trim()
-    ? (() => {
-        if (!titleResults || !learningEntryIds || !allForSearch) return undefined;
-        const titleIds = new Set(titleResults.map((e) => e._id));
-        const extra = allForSearch.filter(
-          (e) => learningEntryIds.includes(e._id) && !titleIds.has(e._id)
-        );
-        return [...titleResults, ...extra];
-      })()
-    : undefined;
+// Tilt on hover using framer-motion spring transforms
+function TiltCard({
+  children,
+  className,
+  variants,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  variants?: typeof fadeUp;
+}) {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const rotateX = useSpring(useTransform(y, [-0.5, 0.5], [4, -4]), {
+    stiffness: 300,
+    damping: 28,
+  });
+  const rotateY = useSpring(useTransform(x, [-0.5, 0.5], [-4, 4]), {
+    stiffness: 300,
+    damping: 28,
+  });
 
-  const entries = searchQuery.trim()
-    ? searchResults
-    : showExplored
-    ? allEntries
-    : unexplored;
-
-  const count = unexplored?.length ?? 0;
-
-  function toggleSelect(id: string) {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  function onMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    x.set((e.clientX - rect.left) / rect.width - 0.5);
+    y.set((e.clientY - rect.top) / rect.height - 0.5);
   }
 
-  function clearSelection() {
-    setSelectedIds(new Set());
-    setBulkMoveTarget("");
+  function onMouseLeave() {
+    x.set(0);
+    y.set(0);
   }
-
-  async function handleBulkExplored() {
-    await bulkMarkExplored({ entryIds: [...selectedIds] as Id<"entries">[] });
-    clearSelection();
-  }
-
-  async function handleBulkDelete() {
-    await bulkRemove({ entryIds: [...selectedIds] as Id<"entries">[] });
-    clearSelection();
-  }
-
-  async function handleBulkMove() {
-    if (!bulkMoveTarget) return;
-    await bulkMove({ entryIds: [...selectedIds] as Id<"entries">[], collectionId: bulkMoveTarget as Id<"collections"> });
-    clearSelection();
-  }
-
-  const selectedCount = selectedIds.size;
-
-  const profileButton = (
-    <button
-      onClick={onSignOut}
-      title="Sign out"
-      className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-100 transition-colors"
-    >
-      {me?.image ? (
-        <Image
-          src={me.image}
-          alt={me.name ?? "User"}
-          width={28}
-          height={28}
-          className="rounded-full"
-        />
-      ) : (
-        <div className="h-7 w-7 rounded-full bg-slate-200 flex items-center justify-center text-xs font-medium text-slate-600">
-          {me?.name?.[0]?.toUpperCase() ?? "?"}
-        </div>
-      )}
-      <LogOut className="h-3.5 w-3.5 text-slate-400" />
-    </button>
-  );
 
   return (
-    <AppShell topbarRight={profileButton}>
-      <main className="flex-1 overflow-y-auto">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
-          <div className="flex items-center justify-between mb-6 gap-3">
-            <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
-                <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-slate-500" />
-                Library
-                {count > 0 && (
-                  <span className="ml-1 rounded-full bg-slate-900 px-2 py-0.5 text-xs font-medium text-white">
-                    {count}
-                  </span>
-                )}
-              </h1>
+    <motion.div
+      onMouseMove={onMouseMove}
+      onMouseLeave={onMouseLeave}
+      style={{ rotateX, rotateY, transformPerspective: 900 }}
+      variants={variants}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// Count from 00 → target when scrolled into view
+function CountUpNumber({ target, delay = 0 }: { target: number; delay?: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-15% 0px" });
+  const count = useMotionValue(0);
+  const display = useTransform(count, (v) => String(Math.round(v)).padStart(2, "0"));
+
+  useEffect(() => {
+    if (!inView) return;
+    const controls = animate(count, target, {
+      duration: 0.7,
+      delay,
+      ease: "easeOut",
+    });
+    return controls.stop;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inView]);
+
+  return (
+    <span
+      ref={ref}
+      className="serif text-[60px] leading-none block text-[#EAEAEA]"
+      style={{ letterSpacing: "-0.02em" }}
+    >
+      <motion.span>{display}</motion.span>
+    </span>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+export default function LandingPage() {
+  const { scrollY } = useScroll();
+  // Nav border fades in once user scrolls past hero fold
+  const navBorderOpacity = useTransform(scrollY, [0, 80], [0, 1]);
+
+  return (
+    <div className="bg-[#F7F6F3] text-[#111111] min-h-screen">
+
+      {/* ── NAV ── */}
+      <header className="sticky top-0 z-50 bg-[#F7F6F3]/90 backdrop-blur-sm relative">
+        <motion.div
+          className="absolute bottom-0 left-0 right-0 h-px bg-[#EAEAEA]"
+          style={{ opacity: navBorderOpacity }}
+        />
+        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+          <span className="text-sm font-semibold tracking-tight text-[#111111]">
+            Breadcrumbs
+          </span>
+          <Link
+            href="/sign-in"
+            className="flex items-center gap-1.5 text-xs font-medium text-[#787774] hover:text-[#111111] transition-colors duration-150"
+          >
+            Sign in <ArrowRight />
+          </Link>
+        </div>
+      </header>
+
+      {/* ── HERO ── */}
+      <section className="relative max-w-5xl mx-auto px-6 pt-24 pb-20" suppressHydrationWarning>
+        <NoiseOverlay />
+
+        {/* Badge */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease }}
+          className="inline-flex items-center gap-2 px-2.5 py-1 mb-10 border border-[#e8dfc8] bg-[#FBF3DB]"
+          style={{ borderRadius: "4px" }}
+        >
+          <span className="text-[10px] font-medium uppercase tracking-widest text-[#956400]">
+            Personal knowledge tool
+          </span>
+        </motion.div>
+
+        {/* H1 */}
+        <motion.h1
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease, delay: 0.08 }}
+          className="serif text-[52px] sm:text-[72px] text-black mb-8 max-w-3xl"
+          style={{ lineHeight: 1.04, letterSpacing: "-0.025em" }}
+        >
+          A trail of everything<br />
+          you've learned.
+        </motion.h1>
+
+        {/* Subtext */}
+        <motion.p
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease, delay: 0.15 }}
+          className="text-base text-[#787774] leading-relaxed max-w-md mb-10"
+        >
+          Save links, track what you've explored, write notes on what matters.
+          Your reading list, finally turned into something useful.
+        </motion.p>
+
+        {/* CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease, delay: 0.22 }}
+        >
+          <Link
+            href="/sign-in"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#111111] text-white text-sm font-medium transition-colors duration-150 hover:bg-[#2a2a2a] active:scale-[0.98]"
+            style={{ borderRadius: "5px" }}
+          >
+            Start for free
+            <ArrowRight />
+          </Link>
+        </motion.div>
+
+        {/* ── APP WINDOW MOCKUP ── */}
+        <motion.div
+          initial={{ opacity: 0, y: 28 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.9, ease, delay: 0.3 }}
+          className="mt-16 rounded-xl border border-[#EAEAEA] overflow-hidden bg-white"
+          style={{ boxShadow: "0 2px 24px rgba(0,0,0,0.05)" }}
+        >
+          {/* Window chrome */}
+          <div className="border-b border-[#EAEAEA] bg-[#F9F9F8] px-4 py-3 flex items-center gap-3">
+            <div className="flex gap-1.5 shrink-0">
+              <div className="h-2.5 w-2.5 rounded-full bg-[#EAEAEA]" />
+              <div className="h-2.5 w-2.5 rounded-full bg-[#EAEAEA]" />
+              <div className="h-2.5 w-2.5 rounded-full bg-[#EAEAEA]" />
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <AddEntryDialog />
-              {/* Hidden on mobile — shown in the AppShell top bar instead */}
-              <div className="hidden md:block">
-                {profileButton}
+            <div className="flex-1 mx-6">
+              <div className="mx-auto max-w-[220px] h-5 rounded bg-[#EAEAEA] flex items-center justify-center">
+                <span
+                  className="text-[10px] text-[#787774]"
+                  style={{ fontFamily: "ui-monospace, 'SF Mono', monospace" }}
+                >
+                  breadcrumbs.app/library
+                </span>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 mb-4">
-            <div className="relative max-w-sm w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input
-                placeholder="Search entries..."
-                className="pl-9"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <div className="ml-auto">
-              <ElasticSwitch
-                checked={showExplored}
-                onChange={setShowExplored}
-                label="Show explored"
-              />
-            </div>
-          </div>
-
-          {entries === undefined ? (
-            <div className="flex justify-center py-12">
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
-            </div>
-          ) : entries.length === 0 ? (
-            <div className="text-center py-16 text-slate-400">
-              <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-40" />
-              <p className="text-sm">
-                {searchQuery ? "No results found" : "Nothing to explore yet. Add something!"}
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {entries.map((entry) => (
-                <EntryCard
-                  key={entry._id}
-                  entry={entry}
-                  showCollection
-                  selectable
-                  selected={selectedIds.has(entry._id)}
-                  onToggleSelect={() => toggleSelect(entry._id)}
-                />
+          {/* App body */}
+          <div className="flex" style={{ height: "300px" }}>
+            {/* Sidebar */}
+            <div className="hidden sm:flex w-48 border-r border-[#EAEAEA] flex-col p-3 gap-0.5 shrink-0">
+              <div className="h-7 flex items-center px-3 bg-[#F7F6F3] rounded-md">
+                <span className="text-xs font-medium text-[#111111]">Library</span>
+              </div>
+              <div className="h-7 flex items-center px-3 rounded-md">
+                <span className="text-xs text-[#BBBBB8]">Export</span>
+              </div>
+              <div className="h-7 flex items-center px-3 rounded-md">
+                <span className="text-xs text-[#BBBBB8]">Bookmarklet</span>
+              </div>
+              <div className="mt-4 mb-1 px-3">
+                <span
+                  className="text-[9px] uppercase text-[#DEDEDE]"
+                  style={{ letterSpacing: "0.12em" }}
+                >
+                  Collections
+                </span>
+              </div>
+              {[
+                { bg: "#FBF3DB", border: "rgba(149,100,0,0.35)", label: "Design" },
+                { bg: "#E1F3FE", border: "rgba(31,108,159,0.35)", label: "Engineering" },
+                { bg: "#EDF3EC", border: "rgba(52,101,56,0.35)", label: "Product" },
+              ].map((col) => (
+                <div key={col.label} className="h-7 flex items-center px-3 gap-2 rounded-md">
+                  <div
+                    className="h-2 w-2 rounded-full shrink-0"
+                    style={{ backgroundColor: col.bg, border: `1px solid ${col.border}` }}
+                  />
+                  <span className="text-xs text-[#787774]">{col.label}</span>
+                </div>
               ))}
             </div>
-          )}
-        </div>
 
-        {/* Bulk action bar */}
-        {selectedCount > 0 && (
-          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] sm:w-auto">
-            <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white shadow-lg px-4 py-3">
-              <span className="text-sm font-medium text-slate-700 mr-1">
-                {selectedCount} selected
-              </span>
-              <Button size="sm" variant="outline" onClick={handleBulkExplored} className="gap-1.5">
-                <CheckCircle className="h-3.5 w-3.5" />
-                Mark explored
-              </Button>
-              {(collections?.length ?? 0) > 0 && (
-                <div className="flex items-center gap-1.5">
-                  <Select value={bulkMoveTarget} onValueChange={setBulkMoveTarget}>
-                    <SelectTrigger className="h-8 text-xs w-32">
-                      <SelectValue placeholder="Move to..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {collections!.map((col) => (
-                        <SelectItem key={col._id} value={col._id}>
-                          <span className="flex items-center gap-2">
-                            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: col.color ?? "#94a3b8" }} />
-                            {col.name}
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button size="sm" variant="outline" disabled={!bulkMoveTarget} onClick={handleBulkMove} className="gap-1.5">
-                    <FolderInput className="h-3.5 w-3.5" />
-                    Move
-                  </Button>
+            {/* Entry list with hover highlight */}
+            <div className="flex-1 p-4 overflow-hidden">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold text-[#111111]">Library</span>
+                <div
+                  className="h-5 px-2 bg-[#111111] flex items-center justify-center"
+                  style={{ borderRadius: "4px" }}
+                >
+                  <span className="text-[9px] text-white font-medium">+ Add</span>
                 </div>
-              )}
-              <Button size="sm" variant="outline" onClick={handleBulkDelete} className="gap-1.5 text-red-500 hover:text-red-600 hover:border-red-300">
-                <Trash2 className="h-3.5 w-3.5" />
-                Delete
-              </Button>
-              <button onClick={clearSelection} className="text-xs text-slate-400 hover:text-slate-600 ml-1">
-                Cancel
-              </button>
+              </div>
+
+              <div className="space-y-2">
+                {[
+                  {
+                    title: "The Product Roadmap Fallacy",
+                    domain: "medium.com",
+                    time: "2 days ago",
+                    explored: false,
+                  },
+                  {
+                    title: "How Figma Builds Product",
+                    domain: "figma.com",
+                    time: "1 week ago",
+                    explored: true,
+                  },
+                  {
+                    title: "Shape Up — Basecamp's product methodology",
+                    domain: "basecamp.com",
+                    time: "3 weeks ago",
+                    explored: false,
+                  },
+                ].map((entry, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4, ease, delay: 0.4 + i * 0.1 }}
+                    whileHover={entry.explored ? {} : { backgroundColor: "#F5F2EE" }}
+                    className="rounded-lg border border-[#EAEAEA] px-4 py-2.5 flex items-start gap-3 cursor-default"
+                    style={{ backgroundColor: entry.explored ? "#FAFAFA" : "#FFFFFF" }}
+                  >
+                    <div
+                      className="h-2 w-2 mt-1 rounded-full shrink-0"
+                      style={{ backgroundColor: entry.explored ? "#DEDEDE" : "#956400" }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p
+                        className="text-xs font-medium truncate"
+                        style={{
+                          color: entry.explored ? "#DEDEDE" : "#111111",
+                          textDecoration: entry.explored ? "line-through" : "none",
+                        }}
+                      >
+                        {entry.title}
+                      </p>
+                      <p
+                        className="text-[10px] mt-0.5"
+                        style={{ color: entry.explored ? "#DEDEDE" : "#BBBBB8" }}
+                      >
+                        {entry.domain} · {entry.time}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </div>
-        )}
-      </main>
-    </AppShell>
+        </motion.div>
+      </section>
+
+      {/* ── HOW IT WORKS ── */}
+      <section className="border-t border-[#EAEAEA] bg-white">
+        <div className="max-w-5xl mx-auto px-6 py-24">
+          <motion.div
+            className="mb-16"
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-10% 0px" }}
+            variants={fadeUp}
+          >
+            <span
+              className="text-[10px] uppercase text-[#555555]"
+              style={{ letterSpacing: "0.14em" }}
+            >
+              How it works
+            </span>
+          </motion.div>
+
+          {/* Staggered steps */}
+          <motion.div
+            className="grid sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-[#EAEAEA]"
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-10% 0px" }}
+            variants={stagger}
+          >
+            <motion.div variants={fadeUp} className="sm:pr-12 pb-12 sm:pb-0">
+              <CountUpNumber target={1} delay={0} />
+              <h3 className="mt-5 text-sm font-semibold text-black">Save</h3>
+              <p className="mt-2 text-sm text-[#787774] leading-relaxed">
+                Use the one-click bookmarklet from any browser. No extension needed —
+                drag it to your toolbar once and it works on every site.
+              </p>
+            </motion.div>
+
+            <motion.div variants={fadeUp} className="sm:px-12 py-12 sm:py-0">
+              <CountUpNumber target={2} delay={0.1} />
+              <h3 className="mt-5 text-sm font-semibold text-black">Explore</h3>
+              <p className="mt-2 text-sm text-[#787774] leading-relaxed">
+                Work through your library at your own pace. Organize by collection,
+                filter by status, and mark things explored as you finish them.
+              </p>
+            </motion.div>
+
+            <motion.div variants={fadeUp} className="sm:pl-12 pt-12 sm:pt-0">
+              <CountUpNumber target={3} delay={0.2} />
+              <h3 className="mt-5 text-sm font-semibold text-black">Learn</h3>
+              <p className="mt-2 text-sm text-[#787774] leading-relaxed">
+                Write notes per link, rate 1–5 stars, then export a collection as
+                Markdown — ready to paste into any editor or blog.
+              </p>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── FEATURES BENTO ── */}
+      <section className="border-t border-[#EAEAEA] bg-[#F7F6F3]">
+        <div className="max-w-5xl mx-auto px-6 py-24">
+          <motion.div
+            className="mb-16"
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-10% 0px" }}
+            variants={fadeUp}
+          >
+            <span
+              className="text-[10px] uppercase text-[#555555]"
+              style={{ letterSpacing: "0.14em" }}
+            >
+              Features
+            </span>
+          </motion.div>
+
+          {/* Asymmetric bento with stagger + tilt */}
+          <motion.div
+            className="grid grid-cols-2 sm:grid-cols-3 gap-3"
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-5% 0px" }}
+            variants={stagger}
+          >
+            {/* Collections — wide */}
+            <TiltCard
+              variants={fadeUp}
+              className="col-span-2 rounded-xl border border-[#EAEAEA] bg-white p-8"
+            >
+              <div className="flex flex-col sm:flex-row items-start gap-8">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-black mb-2">Collections</h3>
+                  <p className="text-sm text-[#787774] leading-relaxed">
+                    Group links by topic, project, or goal. Color-code them, archive
+                    when done. Your library organized the way you think — not the way an
+                    app expects you to.
+                  </p>
+                </div>
+                <div className="flex flex-col gap-2 shrink-0 w-full sm:w-auto">
+                  {[
+                    { bg: "#FBF3DB", border: "rgba(149,100,0,0.4)", label: "Design systems" },
+                    { bg: "#E1F3FE", border: "rgba(31,108,159,0.4)", label: "Engineering" },
+                    { bg: "#EDF3EC", border: "rgba(52,101,56,0.4)", label: "Product thinking" },
+                  ].map((col) => (
+                    <div
+                      key={col.label}
+                      className="flex items-center gap-2 border border-[#EAEAEA] px-3 py-2 bg-[#F9F9F8]"
+                      style={{ borderRadius: "6px" }}
+                    >
+                      <div
+                        className="h-2 w-2 rounded-full shrink-0"
+                        style={{ backgroundColor: col.bg, border: `1px solid ${col.border}` }}
+                      />
+                      <span className="text-xs text-[#787774]">{col.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </TiltCard>
+
+            {/* Markdown export — tall */}
+            <TiltCard
+              variants={fadeUp}
+              className="row-span-2 rounded-xl border border-[#EAEAEA] bg-white p-7 flex flex-col"
+            >
+              <h3 className="font-semibold text-black mb-2">Markdown export</h3>
+              <p className="text-sm text-[#787774] leading-relaxed">
+                Export all your notes from a collection as clean Markdown. One click
+                from your learnings to your blog post.
+              </p>
+              <div className="mt-auto pt-8">
+                <div
+                  className="rounded-lg border border-[#EAEAEA] bg-[#F7F6F3] p-4 space-y-1"
+                  style={{
+                    fontFamily: "ui-monospace, 'SF Mono', 'Geist Mono', monospace",
+                    fontSize: "10px",
+                    lineHeight: "1.7",
+                  }}
+                >
+                  <p className="text-[#111111] font-medium"># Design systems</p>
+                  <p className="text-[#DEDEDE]">---</p>
+                  <p className="text-[#787774]">## Tokens are not a design system</p>
+                  <p className="text-[#BBBBB8]">tokens.wtf · ★★★★★</p>
+                  <p className="text-[#BBBBB8]">The distinction between tokens and...</p>
+                </div>
+              </div>
+            </TiltCard>
+
+            {/* Learning notes */}
+            <TiltCard
+              variants={fadeUp}
+              className="rounded-xl border border-[#EAEAEA] bg-white p-7"
+            >
+              <h3 className="font-semibold text-black mb-2">Learning notes</h3>
+              <p className="text-sm text-[#787774] leading-relaxed">
+                Capture insights per link. Rate 1–5 stars to surface your best finds
+                later without re-reading everything.
+              </p>
+            </TiltCard>
+
+            {/* Bookmarklet */}
+            <TiltCard
+              variants={fadeUp}
+              className="rounded-xl border border-[#EAEAEA] bg-white p-7"
+            >
+              <h3 className="font-semibold text-black mb-2">One-click bookmarklet</h3>
+              <p className="text-sm text-[#787774] leading-relaxed">
+                Save any page from any browser in one click. No extension. Drag it
+                once to your toolbar — done.
+              </p>
+            </TiltCard>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ── CTA BANNER ── */}
+      <motion.section
+        className="border-t border-[#EAEAEA] bg-[#111111]"
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, margin: "-10% 0px" }}
+        variants={fadeUp}
+      >
+        <div className="max-w-5xl mx-auto px-6 py-24">
+          <h2
+            className="serif text-[44px] sm:text-[60px] text-white mb-5"
+            style={{ lineHeight: 1.05, letterSpacing: "-0.025em" }}
+          >
+            Start leaving<br />
+            breadcrumbs.
+          </h2>
+          <p className="text-sm text-[#999999] mb-10">
+            Free to use. Sign in with Google.
+          </p>
+          <Link
+            href="/sign-in"
+            className="inline-flex items-center gap-2 px-4 py-2.5 border border-[#555555] text-white text-sm font-medium transition-colors duration-150 hover:bg-white/5 active:scale-[0.98]"
+            style={{ borderRadius: "5px" }}
+          >
+            Get started
+            <ArrowRight />
+          </Link>
+        </div>
+      </motion.section>
+
+      {/* ── FOOTER ── */}
+      <footer className="border-t border-[#1E1E1E] bg-[#111111]">
+        <div className="max-w-5xl mx-auto px-6 py-6 flex items-center justify-between">
+          <span className="text-xs text-[#888888] font-medium">Breadcrumbs</span>
+          <span className="text-xs text-[#888888]">Built for curious minds.</span>
+        </div>
+      </footer>
+
+    </div>
   );
 }

@@ -3,6 +3,7 @@ import "./globals.css";
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { ConvexClientProvider } from "@/components/ConvexClientProvider";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { instrumentSerif } from "@/lib/fonts";
 
 export const metadata: Metadata = {
   title: "Breadcrumbs",
@@ -25,9 +26,9 @@ export default async function RootLayout({
 }) {
   return (
     <ConvexAuthNextjsServerProvider>
-      <html lang="en" className="h-full">
+      <html lang="en" className={`h-full ${instrumentSerif.variable}`}>
         <head>
-          <meta name="theme-color" content="#0f172a" />
+          <meta name="theme-color" content="#78350f" />
           <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
         </head>
         <body className="min-h-full">

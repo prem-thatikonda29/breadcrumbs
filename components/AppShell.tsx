@@ -28,15 +28,15 @@ export function AppShell({ children, topbarRight }: { children: React.ReactNode;
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
         {/* Mobile top bar — hidden on md+ */}
-        <header className="md:hidden flex items-center gap-3 px-4 h-12 border-b border-slate-200 bg-white shrink-0">
+        <header className="md:hidden flex items-center gap-3 px-4 h-12 border-b border-[#EAEAEA] bg-white shrink-0">
           <button
             onClick={() => setMobileOpen(true)}
-            className="p-1 rounded-md text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+            className="p-1 rounded-md text-[#787774] hover:text-[#111111] hover:bg-[#F7F6F3] transition-colors"
             aria-label="Open menu"
           >
             <Menu className="h-5 w-5" />
           </button>
-          <span className="font-bold text-slate-900 tracking-tight flex-1">Breadcrumbs</span>
+          <span className="font-bold text-[#111111] tracking-tight flex-1">Breadcrumbs</span>
           {topbarRight}
         </header>
 
