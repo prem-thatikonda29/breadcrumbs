@@ -53,8 +53,8 @@ export default function ExportPage() {
         <div className="max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
           <div className="flex items-start justify-between gap-3 mb-6">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Export</h1>
-              <p className="text-sm text-slate-500 mt-0.5">
+              <h1 className="text-xl sm:text-2xl font-bold text-[#111111]">Export</h1>
+              <p className="text-sm text-[#787774] mt-0.5">
                 Export your learnings as Markdown for your blog
               </p>
             </div>
@@ -71,7 +71,7 @@ export default function ExportPage() {
           </div>
 
           <div className="mb-4">
-            <label className="text-sm text-slate-600 mb-1.5 block">Collection</label>
+            <label className="text-sm text-[#787774] mb-1.5 block">Collection</label>
             <Select value={selectedCollection} onValueChange={setSelectedCollection}>
               <SelectTrigger className="w-64">
                 <SelectValue />
@@ -89,15 +89,15 @@ export default function ExportPage() {
 
           {data === undefined ? (
             <div className="flex justify-center py-12">
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#EAEAEA] border-t-[#111111]" />
             </div>
           ) : data.length === 0 ? (
-            <div className="text-center py-16 text-slate-400 border border-dashed border-slate-200 rounded-xl">
+            <div className="text-center py-16 text-[#BBBBB8] border border-dashed border-[#EAEAEA] rounded-xl">
               <p className="text-sm">No learning notes found for this collection.</p>
             </div>
           ) : (
-            <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-              <pre className="p-5 text-xs text-slate-700 overflow-x-auto whitespace-pre-wrap leading-relaxed font-mono max-h-[60vh] overflow-y-auto">
+            <div className="rounded-xl border border-[#EAEAEA] bg-white overflow-hidden">
+              <pre className="p-5 text-xs text-[#333333] overflow-x-auto whitespace-pre-wrap leading-relaxed font-mono max-h-[60vh] overflow-y-auto">
                 {markdown}
               </pre>
             </div>

@@ -29,7 +29,7 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#EAEAEA] border-t-[#111111]" />
       </div>
     );
   }
@@ -118,7 +118,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
     <button
       onClick={onSignOut}
       title="Sign out"
-      className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-100 transition-colors"
+      className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-[#F7F6F3] transition-colors"
     >
       {me?.image ? (
         <Image
@@ -129,11 +129,11 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
           className="rounded-full"
         />
       ) : (
-        <div className="h-7 w-7 rounded-full bg-slate-200 flex items-center justify-center text-xs font-medium text-slate-600">
+        <div className="h-7 w-7 rounded-full bg-[#EAEAEA] flex items-center justify-center text-xs font-medium text-[#787774]">
           {me?.name?.[0]?.toUpperCase() ?? "?"}
         </div>
       )}
-      <LogOut className="h-3.5 w-3.5 text-slate-400" />
+      <LogOut className="h-3.5 w-3.5 text-[#BBBBB8]" />
     </button>
   );
 
@@ -143,11 +143,11 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
         <div className="max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
           <div className="flex items-center justify-between mb-6 gap-3">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
-                <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-slate-500" />
+              <h1 className="text-xl sm:text-2xl font-bold text-[#111111] flex items-center gap-2">
+                <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-[#787774]" />
                 Library
                 {count > 0 && (
-                  <span className="ml-1 rounded-full bg-slate-900 px-2 py-0.5 text-xs font-medium text-white">
+                  <span className="ml-1 rounded-full bg-[#111111] px-2 py-0.5 text-xs font-medium text-white">
                     {count}
                   </span>
                 )}
@@ -164,7 +164,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
 
           <div className="flex items-center gap-3 mb-4">
             <div className="relative max-w-sm w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#BBBBB8]" />
               <Input
                 placeholder="Search entries..."
                 className="pl-9"
@@ -183,10 +183,10 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
 
           {entries === undefined ? (
             <div className="flex justify-center py-12">
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
+              <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#EAEAEA] border-t-[#111111]" />
             </div>
           ) : entries.length === 0 ? (
-            <div className="text-center py-16 text-slate-400">
+            <div className="text-center py-16 text-[#BBBBB8]">
               <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-40" />
               <p className="text-sm">
                 {searchQuery ? "No results found" : "Nothing to explore yet. Add something!"}
@@ -211,8 +211,8 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
         {/* Bulk action bar */}
         {selectedCount > 0 && (
           <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] sm:w-auto">
-            <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white shadow-lg px-4 py-3">
-              <span className="text-sm font-medium text-slate-700 mr-1">
+            <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[#EAEAEA] bg-white shadow-lg px-4 py-3">
+              <span className="text-sm font-medium text-[#333333] mr-1">
                 {selectedCount} selected
               </span>
               <Button size="sm" variant="outline" onClick={handleBulkExplored} className="gap-1.5">
@@ -246,7 +246,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
                 <Trash2 className="h-3.5 w-3.5" />
                 Delete
               </Button>
-              <button onClick={clearSelection} className="text-xs text-slate-400 hover:text-slate-600 ml-1">
+              <button onClick={clearSelection} className="text-xs text-[#BBBBB8] hover:text-[#787774] ml-1">
                 Cancel
               </button>
             </div>

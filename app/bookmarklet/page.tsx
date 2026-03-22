@@ -27,7 +27,7 @@ export default function BookmarkletPage() {
       a.draggable = true;
       a.title = "Drag me to your bookmarks bar";
       a.className =
-        "inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50 transition-colors cursor-grab active:cursor-grabbing select-none";
+        "inline-flex items-center gap-2 rounded-lg border border-[#EAEAEA] bg-white px-4 py-2 text-sm font-medium text-[#111111] shadow-sm hover:bg-[#F7F6F3] transition-colors cursor-grab active:cursor-grabbing select-none";
       a.addEventListener("click", (e) => e.preventDefault());
 
       const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
@@ -40,7 +40,7 @@ export default function BookmarkletPage() {
       svg.setAttribute("stroke-width", "2");
       svg.setAttribute("stroke-linecap", "round");
       svg.setAttribute("stroke-linejoin", "round");
-      svg.style.color = "rgb(100 116 139)"; // slate-500
+      svg.style.color = "#787774";
       const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
       path.setAttribute("d", "m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z");
       svg.appendChild(path);
@@ -66,52 +66,52 @@ export default function BookmarkletPage() {
         <div className="max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-              <Bookmark className="h-6 w-6 text-slate-500" />
+            <h1 className="text-2xl font-bold text-[#111111] flex items-center gap-2">
+              <Bookmark className="h-6 w-6 text-[#787774]" />
               Bookmarklet
             </h1>
-            <p className="text-sm text-slate-500 mt-0.5">
+            <p className="text-sm text-[#787774] mt-0.5">
               Save any page to your inbox in one click — no extension needed.
             </p>
           </div>
 
           {/* Step 1 — Install */}
-          <div className="rounded-xl border border-slate-200 bg-white p-6 mb-4">
+          <div className="rounded-xl border border-[#EAEAEA] bg-white p-6 mb-4">
             <div className="flex items-center gap-2 mb-1">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#111111] text-xs font-semibold text-white">
                 1
               </span>
-              <h2 className="text-base font-semibold text-slate-900">Install</h2>
+              <h2 className="text-base font-semibold text-[#111111]">Install</h2>
             </div>
-            <p className="text-sm text-slate-500 mb-5">
+            <p className="text-sm text-[#787774] mb-5">
               Drag this button to your browser&apos;s bookmark bar.
             </p>
             <div className="flex items-center gap-4">
               {/* Anchor injected via DOM in useEffect — React 19 blocks javascript: URLs in JSX */}
               <div ref={anchorContainerRef} />
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-[#BBBBB8]">
                 Drag the button above to your bookmarks bar
               </p>
             </div>
           </div>
 
           {/* Step 2 — Use */}
-          <div className="rounded-xl border border-slate-200 bg-white p-6 mb-4">
+          <div className="rounded-xl border border-[#EAEAEA] bg-white p-6 mb-4">
             <div className="flex items-center gap-2 mb-1">
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#111111] text-xs font-semibold text-white">
                 2
               </span>
-              <h2 className="text-base font-semibold text-slate-900">Use</h2>
+              <h2 className="text-base font-semibold text-[#111111]">Use</h2>
             </div>
-            <p className="text-sm text-slate-500">
-              Navigate to any page, click the <strong className="font-medium text-slate-700">Breadcrumbs</strong> bookmark, and the URL is instantly saved to your inbox.
+            <p className="text-sm text-[#787774]">
+              Navigate to any page, click the <strong className="font-medium text-[#333333]">Breadcrumbs</strong> bookmark, and the URL is instantly saved to your inbox.
             </p>
           </div>
 
           {/* Demo video */}
-          <div className="rounded-xl border border-slate-200 bg-white overflow-hidden mb-4">
-            <div className="px-5 py-3 border-b border-slate-100">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+          <div className="rounded-xl border border-[#EAEAEA] bg-white overflow-hidden mb-4">
+            <div className="px-5 py-3 border-b border-[#EAEAEA]">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#BBBBB8]">
                 Demo
               </span>
             </div>
@@ -133,9 +133,9 @@ export default function BookmarkletPage() {
           </div>
 
           {/* Raw code */}
-          <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+          <div className="rounded-xl border border-[#EAEAEA] bg-white overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-[#EAEAEA]">
+              <span className="text-xs font-semibold uppercase tracking-wider text-[#BBBBB8]">
                 Raw bookmarklet code
               </span>
               <Button
@@ -150,12 +150,12 @@ export default function BookmarkletPage() {
               </Button>
             </div>
             <div className="p-5">
-              <code className="block text-xs text-slate-700 font-mono break-all leading-relaxed whitespace-pre-wrap">
+              <code className="block text-xs text-[#333333] font-mono break-all leading-relaxed whitespace-pre-wrap">
                 {rawCode || "Loading…"}
               </code>
             </div>
             <div className="px-5 pb-4">
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-[#BBBBB8]">
                 You can manually create a bookmark in your browser and paste this as the URL if drag-and-drop doesn&apos;t work.
               </p>
             </div>

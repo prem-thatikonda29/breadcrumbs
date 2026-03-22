@@ -7,13 +7,16 @@ export default function SignInPage() {
   const { signIn } = useAuthActions();
 
   return (
-    <div className="flex h-screen flex-col items-center justify-center gap-6 bg-slate-50">
+    <div className="flex h-screen flex-col items-center justify-center gap-6 bg-white">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-slate-900">Breadcrumbs</h1>
-        <p className="mt-2 text-slate-500">Track what you explore. Capture what you learn.</p>
+        <h1 className="serif text-4xl text-[#111111]">Breadcrumbs</h1>
+        <p className="mt-2 text-sm text-[#787774]">Track what you explore. Capture what you learn.</p>
       </div>
-      <Button onClick={() => signIn("google")} size="lg" className="gap-2">
-        <svg className="h-5 w-5" viewBox="0 0 24 24">
+      <button
+        onClick={() => signIn("google")}
+        className="inline-flex items-center gap-2.5 rounded-lg border border-[#EAEAEA] bg-white px-5 py-2.5 text-sm font-medium text-[#111111] shadow-sm hover:bg-[#F7F6F3] transition-colors"
+      >
+        <svg className="h-4 w-4" viewBox="0 0 24 24">
           <path
             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
             fill="#4285F4"
@@ -32,7 +35,7 @@ export default function SignInPage() {
           />
         </svg>
         Sign in with Google
-      </Button>
+      </button>
     </div>
   );
 }

@@ -55,9 +55,9 @@ export function EntryCard({ entry, showCollection, selectable, selected, onToggl
     <>
       <div
         className={cn(
-          "group flex items-start gap-3 rounded-xl border p-4 bg-white transition-colors hover:border-slate-300",
-          isExplored ? "border-slate-100" : "border-slate-200",
-          selected && "border-slate-400 bg-slate-50"
+          "group flex items-start gap-3 rounded-xl border p-4 bg-white transition-colors hover:border-[#D4D3D0]",
+          isExplored ? "border-[#EAEAEA]" : "border-[#EAEAEA]",
+          selected && "border-[#D4D3D0] bg-[#F7F6F3]"
         )}
       >
         {selectable && (
@@ -66,8 +66,8 @@ export function EntryCard({ entry, showCollection, selectable, selected, onToggl
             className={cn(
               "mt-0.5 shrink-0 h-4 w-4 rounded border flex items-center justify-center transition-colors",
               selected
-                ? "bg-slate-900 border-slate-900"
-                : "border-slate-300 hover:border-slate-500"
+                ? "bg-[#111111] border-[#111111]"
+                : "border-[#D4D3D0] hover:border-[#787774]"
             )}
           >
             {selected && (
@@ -84,7 +84,7 @@ export function EntryCard({ entry, showCollection, selectable, selected, onToggl
               href={`/entries/${entry._id}`}
               className={cn(
                 "font-medium text-sm leading-snug hover:underline line-clamp-2",
-                isExplored ? "text-slate-400 line-through" : "text-slate-900"
+                isExplored ? "text-[#BBBBB8] line-through" : "text-[#111111]"
               )}
             >
               {entry.title}
@@ -95,7 +95,7 @@ export function EntryCard({ entry, showCollection, selectable, selected, onToggl
               href={entry.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1 text-xs text-slate-400 hover:text-slate-600"
+              className="flex items-center gap-1 text-xs text-[#BBBBB8] hover:text-[#787774]"
             >
               <ExternalLink className="h-3 w-3" />
               {getDomain(entry.url)}
@@ -108,10 +108,10 @@ export function EntryCard({ entry, showCollection, selectable, selected, onToggl
                 {collection.name}
               </span>
             )}
-            <span className="text-xs text-slate-400">{formatDate(entry.dateAdded)}</span>
+            <span className="text-xs text-[#BBBBB8]">{formatDate(entry.dateAdded)}</span>
           </div>
           {entry.notes && (
-            <p className="mt-1.5 text-xs text-slate-400 line-clamp-1 italic">{entry.notes}</p>
+            <p className="mt-1.5 text-xs text-[#BBBBB8] line-clamp-1 italic">{entry.notes}</p>
           )}
         </div>
 
@@ -120,7 +120,7 @@ export function EntryCard({ entry, showCollection, selectable, selected, onToggl
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+              className="h-7 w-7 text-[#BBBBB8] hover:text-[#111111] hover:bg-[#F7F6F3]"
               onClick={() => setMoveOpen(true)}
               title="Move to collection"
             >
@@ -131,7 +131,7 @@ export function EntryCard({ entry, showCollection, selectable, selected, onToggl
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 text-slate-400 hover:text-amber-600 hover:bg-amber-50"
+              className="h-7 w-7 text-[#BBBBB8] hover:text-amber-600 hover:bg-amber-50"
               onClick={() => markUnexplored({ entryId: entry._id })}
               title="Mark as not explored"
             >
@@ -141,7 +141,7 @@ export function EntryCard({ entry, showCollection, selectable, selected, onToggl
             <Button
               variant="ghost"
               size="icon"
-              className="h-7 w-7 text-slate-400 hover:text-green-600 hover:bg-green-50"
+              className="h-7 w-7 text-[#BBBBB8] hover:text-[#111111] hover:bg-[#F7F6F3]"
               onClick={() => markExplored({ entryId: entry._id })}
               title="Mark as explored"
             >
@@ -151,7 +151,7 @@ export function EntryCard({ entry, showCollection, selectable, selected, onToggl
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 text-slate-400 hover:text-red-500 hover:bg-red-50"
+            className="h-7 w-7 text-[#BBBBB8] hover:text-red-500 hover:bg-red-50"
             onClick={() => removeEntry({ entryId: entry._id })}
             title="Delete"
           >
