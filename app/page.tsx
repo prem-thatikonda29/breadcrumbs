@@ -10,7 +10,7 @@ import { AddEntryDialog } from "@/components/AddEntryDialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ElasticSwitch } from "@/components/ui/elastic-switch";
-import { Search, Inbox, LogOut, CheckCircle, Trash2, FolderInput } from "lucide-react";
+import { Search, BookOpen, LogOut, CheckCircle, Trash2, FolderInput } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 import {
@@ -180,17 +180,14 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
           <div className="flex items-center justify-between mb-6 gap-3">
             <div>
               <h1 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
-                <Inbox className="h-5 w-5 sm:h-6 sm:w-6 text-slate-500" />
-                Inbox
+                <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-slate-500" />
+                Library
                 {count > 0 && (
                   <span className="ml-1 rounded-full bg-slate-900 px-2 py-0.5 text-xs font-medium text-white">
                     {count}
                   </span>
                 )}
               </h1>
-              <p className="text-sm text-slate-500 mt-0.5">
-                {count === 0 ? "All caught up!" : `${count} item${count !== 1 ? "s" : ""} to explore`}
-              </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <AddEntryDialog />
@@ -226,7 +223,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
             </div>
           ) : entries.length === 0 ? (
             <div className="text-center py-16 text-slate-400">
-              <Inbox className="h-10 w-10 mx-auto mb-3 opacity-40" />
+              <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-40" />
               <p className="text-sm">
                 {searchQuery ? "No results found" : "Nothing to explore yet. Add something!"}
               </p>
