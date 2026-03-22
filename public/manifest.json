@@ -25,8 +25,9 @@
     "action": "/bookmarklet/save",
     "method": "GET",
     "params": {
-      "url": "url",
-      "title": "title"
+      "title": "title",
+      "text": "text",
+      "url": "url"
     }
   }
 }

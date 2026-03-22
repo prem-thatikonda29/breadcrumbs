@@ -1,22 +1,30 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { useConvexAuth } from "convex/react";
 import { useState, useEffect } from "react";
 import { Check, X, Loader2 } from "lucide-react";
 
 type Status = "idle" | "saving" | "success" | "duplicate" | "error" | "unauthenticated";
 
-export default function BookmarkletSavePage() {
-  const searchParams = useSearchParams();
-  const url = searchParams.get("url") ?? "";
-  const title = searchParams.get("title") ?? "";
+function getShareParams() {
+  const params = new URLSearchParams(window.location.search);
+  const rawUrl = params.get("url") ?? "";
+  const rawText = params.get("text") ?? "";
+  return {
+    url: rawUrl || rawText,
+    title: params.get("title") ?? "",
+  };
+}
 
+export default function BookmarkletSavePage() {
   const { isAuthenticated, isLoading } = useConvexAuth();
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [savedUrl, setSavedUrl] = useState("");
 
   async function save() {
+    const { url, title } = getShareParams();
+    setSavedUrl(url);
     setStatus("saving");
     try {
       const res = await fetch("/api/bookmarklet", {
@@ -73,9 +81,9 @@ export default function BookmarkletSavePage() {
               <Check className="h-6 w-6 text-emerald-600" strokeWidth={2.5} />
             </div>
             <p className="text-base font-semibold text-emerald-700">Saved to your inbox!</p>
-            {url && (
-              <p className="max-w-xs truncate text-xs text-slate-400" title={url}>
-                {url}
+            {savedUrl && (
+              <p className="max-w-xs truncate text-xs text-slate-400" title={savedUrl}>
+                {savedUrl}
               </p>
             )}
           </div>
@@ -87,9 +95,9 @@ export default function BookmarkletSavePage() {
               <Check className="h-6 w-6 text-slate-400" strokeWidth={2.5} />
             </div>
             <p className="text-base font-semibold text-slate-700">Already in your inbox</p>
-            {url && (
-              <p className="max-w-xs truncate text-xs text-slate-400" title={url}>
-                {url}
+            {savedUrl && (
+              <p className="max-w-xs truncate text-xs text-slate-400" title={savedUrl}>
+                {savedUrl}
               </p>
             )}
           </div>
