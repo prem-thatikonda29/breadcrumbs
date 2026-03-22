@@ -4,13 +4,18 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Plus, Inbox, Download, Bookmark, Trash2, Pencil, Archive, ArchiveX } from "lucide-react";
+import { Plus, BookOpen, Download, Bookmark, Trash2, Pencil, Archive, ArchiveX } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { CollectionModal } from "@/components/CollectionModal";
 
-export function Sidebar() {
+interface SidebarProps {
+  mobileOpen?: boolean;
+  onClose?: () => void;
+}
+
+export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const collections = useQuery(api.collections.list);
   const archivedCollections = useQuery(api.collections.listArchived);
@@ -20,7 +25,17 @@ export function Sidebar() {
   const [showArchived, setShowArchived] = useState(false);
 
   return (
-    <aside className="w-56 shrink-0 border-r border-slate-200 bg-white h-screen sticky top-0 flex flex-col">
+    <aside
+      className={cn(
+        // Shared
+        "flex flex-col bg-white border-r border-slate-200 h-dvh",
+        // Mobile: fixed overlay, slides in from left
+        "fixed top-0 left-0 z-30 w-72 transition-transform duration-200 ease-in-out",
+        mobileOpen ? "translate-x-0" : "-translate-x-full",
+        // Desktop: in-flow sticky, always visible
+        "md:sticky md:top-0 md:w-56 md:shrink-0 md:translate-x-0 md:z-auto"
+      )}
+    >
       <div className="px-4 py-5 border-b border-slate-100">
         <span className="text-lg font-bold text-slate-900 tracking-tight">Breadcrumbs</span>
       </div>
@@ -28,6 +43,7 @@ export function Sidebar() {
       <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-0.5">
         <Link
           href="/"
+          onClick={onClose}
           className={cn(
             "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
             pathname === "/"
@@ -35,11 +51,12 @@ export function Sidebar() {
               : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
           )}
         >
-          <Inbox className="h-4 w-4" />
-          Inbox
+          <BookOpen className="h-4 w-4" />
+          Library
         </Link>
         <Link
           href="/export"
+          onClick={onClose}
           className={cn(
             "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
             pathname === "/export"
@@ -52,6 +69,7 @@ export function Sidebar() {
         </Link>
         <Link
           href="/bookmarklet"
+          onClick={onClose}
           className={cn(
             "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
             pathname === "/bookmarklet"
@@ -81,6 +99,7 @@ export function Sidebar() {
           >
             <Link
               href={`/collections/${col._id}`}
+              onClick={onClose}
               className={cn(
                 "flex flex-1 items-center gap-2.5 px-3 py-2 text-sm font-medium min-w-0",
                 pathname === `/collections/${col._id}`
@@ -146,6 +165,7 @@ export function Sidebar() {
               <div key={col._id} className="group flex items-center rounded-lg hover:bg-slate-50 transition-colors opacity-60">
                 <Link
                   href={`/collections/${col._id}`}
+                  onClick={onClose}
                   className="flex flex-1 items-center gap-2.5 px-3 py-2 text-sm font-medium min-w-0 text-slate-500"
                 >
                   {col.iconUrl ? (

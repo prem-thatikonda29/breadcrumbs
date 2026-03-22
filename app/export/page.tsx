@@ -3,7 +3,7 @@
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { Sidebar } from "@/components/Sidebar";
+import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -48,25 +48,24 @@ export default function ExportPage() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar />
+    <AppShell>
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-2xl mx-auto px-6 py-8">
-          <div className="flex items-center justify-between mb-6">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
+          <div className="flex items-start justify-between gap-3 mb-6">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900">Export</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Export</h1>
               <p className="text-sm text-slate-500 mt-0.5">
                 Export your learnings as Markdown for your blog
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 shrink-0">
               <Button variant="outline" size="sm" onClick={handleCopy} disabled={!markdown}>
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                {copied ? "Copied!" : "Copy"}
+                <span className="hidden sm:inline">{copied ? "Copied!" : "Copy"}</span>
               </Button>
               <Button size="sm" onClick={handleDownload} disabled={!markdown}>
                 <Download className="h-4 w-4" />
-                Download .md
+                <span className="hidden sm:inline">Download .md</span>
               </Button>
             </div>
           </div>
@@ -105,7 +104,7 @@ export default function ExportPage() {
           )}
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }
 

@@ -2,7 +2,7 @@
 
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Sidebar } from "@/components/Sidebar";
+import { AppShell } from "@/components/AppShell";
 import { useEffect, useRef, useState } from "react";
 import { Bookmark, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -61,10 +61,9 @@ export default function BookmarkletPage() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar />
+    <AppShell>
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-2xl mx-auto px-6 py-8">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
@@ -163,6 +162,6 @@ export default function BookmarkletPage() {
           </div>
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }

@@ -4,7 +4,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useParams } from "next/navigation";
-import { Sidebar } from "@/components/Sidebar";
+import { AppShell } from "@/components/AppShell";
 import { EntryCard } from "@/components/EntryCard";
 import { AddEntryDialog } from "@/components/AddEntryDialog";
 import { Button } from "@/components/ui/button";
@@ -146,22 +146,21 @@ export default function CollectionPage() {
   const selectedCount = selectedIds.size;
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar />
+    <AppShell>
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-2xl mx-auto px-6 py-8">
-          <div className="flex items-center gap-3 mb-6">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
+          <div className="flex items-center gap-2 sm:gap-3 mb-6">
             <Link href="/">
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             </Link>
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
               {collection && (
                 collection.iconUrl ? (
                   <img
                     src={collection.iconUrl}
-                    className="h-9 w-9 rounded-full object-cover shrink-0"
+                    className="h-8 w-8 sm:h-9 sm:w-9 rounded-full object-cover shrink-0"
                     alt=""
                   />
                 ) : (
@@ -171,19 +170,19 @@ export default function CollectionPage() {
                   />
                 )
               )}
-              <div>
-                <h1 className="text-2xl font-bold text-slate-900 leading-tight">
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl font-bold text-slate-900 leading-tight truncate">
                   {collection?.name ?? "Collection"}
                 </h1>
                 {collection?.description && (
-                  <p className="text-sm text-slate-500">{collection.description}</p>
+                  <p className="text-sm text-slate-500 truncate">{collection.description}</p>
                 )}
               </div>
-              <span className="text-slate-400 text-sm self-end mb-0.5">
-                ({(entries?.length ?? 0)} items)
+              <span className="text-slate-400 text-sm shrink-0">
+                ({(entries?.length ?? 0)})
               </span>
             </div>
-            <div className="ml-auto">
+            <div className="shrink-0">
               {collectionId && <AddEntryDialog defaultCollectionId={collectionId} />}
             </div>
           </div>
@@ -269,8 +268,8 @@ export default function CollectionPage() {
 
         {/* Bulk action bar */}
         {selectedCount > 0 && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white shadow-lg px-4 py-3">
+          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] sm:w-auto">
+            <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white shadow-lg px-4 py-3">
               <span className="text-sm font-medium text-slate-700 mr-1">
                 {selectedCount} selected
               </span>
@@ -283,7 +282,7 @@ export default function CollectionPage() {
               {otherCollections.length > 0 && (
                 <div className="flex items-center gap-1.5">
                   <Select value={bulkMoveTarget} onValueChange={setBulkMoveTarget}>
-                    <SelectTrigger className="h-8 text-xs w-36">
+                    <SelectTrigger className="h-8 text-xs w-32">
                       <SelectValue placeholder="Move to..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -317,6 +316,6 @@ export default function CollectionPage() {
           </div>
         )}
       </main>
-    </div>
+    </AppShell>
   );
 }

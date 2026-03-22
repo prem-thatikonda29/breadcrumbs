@@ -4,12 +4,13 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { useConvexAuth } from "convex/react";
-import { Sidebar } from "@/components/Sidebar";
+import { AppShell } from "@/components/AppShell";
 import { EntryCard } from "@/components/EntryCard";
 import { AddEntryDialog } from "@/components/AddEntryDialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Inbox, LogOut, CheckCircle, Trash2, FolderInput } from "lucide-react";
+import { ElasticSwitch } from "@/components/ui/elastic-switch";
+import { Search, BookOpen, LogOut, CheckCircle, Trash2, FolderInput } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 import {
@@ -42,7 +43,7 @@ export default function DashboardPage() {
 
 function SignInPage({ onSignIn }: { onSignIn: () => void }) {
   return (
-    <div className="flex h-screen flex-col items-center justify-center gap-6 bg-slate-50">
+    <div className="flex h-screen flex-col items-center justify-center gap-6 bg-slate-50 px-4">
       <div className="text-center">
         <h1 className="text-3xl font-bold text-slate-900">Breadcrumbs</h1>
         <p className="mt-2 text-slate-500">Track what you explore. Capture what you learn.</p>
@@ -98,7 +99,6 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
     searchQuery.trim() ? {} : "skip"
   );
 
-  // Merge title hits + learning content hits, deduplicated
   const searchResults = searchQuery.trim()
     ? (() => {
         if (!titleResults || !learningEntryIds || !allForSearch) return undefined;
@@ -150,53 +150,56 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
 
   const selectedCount = selectedIds.size;
 
+  const profileButton = (
+    <button
+      onClick={onSignOut}
+      title="Sign out"
+      className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-100 transition-colors"
+    >
+      {me?.image ? (
+        <Image
+          src={me.image}
+          alt={me.name ?? "User"}
+          width={28}
+          height={28}
+          className="rounded-full"
+        />
+      ) : (
+        <div className="h-7 w-7 rounded-full bg-slate-200 flex items-center justify-center text-xs font-medium text-slate-600">
+          {me?.name?.[0]?.toUpperCase() ?? "?"}
+        </div>
+      )}
+      <LogOut className="h-3.5 w-3.5 text-slate-400" />
+    </button>
+  );
+
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar />
+    <AppShell topbarRight={profileButton}>
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-2xl mx-auto px-6 py-8">
-          <div className="flex items-center justify-between mb-6">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
+          <div className="flex items-center justify-between mb-6 gap-3">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-                <Inbox className="h-6 w-6 text-slate-500" />
-                Inbox
+              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
+                <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-slate-500" />
+                Library
                 {count > 0 && (
                   <span className="ml-1 rounded-full bg-slate-900 px-2 py-0.5 text-xs font-medium text-white">
                     {count}
                   </span>
                 )}
               </h1>
-              <p className="text-sm text-slate-500 mt-0.5">
-                {count === 0 ? "All caught up!" : `${count} item${count !== 1 ? "s" : ""} to explore`}
-              </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <AddEntryDialog />
-              <button
-                onClick={onSignOut}
-                title="Sign out"
-                className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-100 transition-colors"
-              >
-                {me?.image ? (
-                  <Image
-                    src={me.image}
-                    alt={me.name ?? "User"}
-                    width={28}
-                    height={28}
-                    className="rounded-full"
-                  />
-                ) : (
-                  <div className="h-7 w-7 rounded-full bg-slate-200 flex items-center justify-center text-xs font-medium text-slate-600">
-                    {me?.name?.[0]?.toUpperCase() ?? "?"}
-                  </div>
-                )}
-                <LogOut className="h-3.5 w-3.5 text-slate-400" />
-              </button>
+              {/* Hidden on mobile — shown in the AppShell top bar instead */}
+              <div className="hidden md:block">
+                {profileButton}
+              </div>
             </div>
           </div>
 
           <div className="flex items-center gap-3 mb-4">
-            <div className="relative flex-1">
+            <div className="relative max-w-sm w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
                 placeholder="Search entries..."
@@ -205,15 +208,13 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <label className="flex items-center gap-2 text-sm text-slate-600 cursor-pointer whitespace-nowrap">
-              <input
-                type="checkbox"
-                className="rounded"
+            <div className="ml-auto">
+              <ElasticSwitch
                 checked={showExplored}
-                onChange={(e) => setShowExplored(e.target.checked)}
+                onChange={setShowExplored}
+                label="Show explored"
               />
-              Show explored
-            </label>
+            </div>
           </div>
 
           {entries === undefined ? (
@@ -222,7 +223,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
             </div>
           ) : entries.length === 0 ? (
             <div className="text-center py-16 text-slate-400">
-              <Inbox className="h-10 w-10 mx-auto mb-3 opacity-40" />
+              <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-40" />
               <p className="text-sm">
                 {searchQuery ? "No results found" : "Nothing to explore yet. Add something!"}
               </p>
@@ -245,8 +246,8 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
 
         {/* Bulk action bar */}
         {selectedCount > 0 && (
-          <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white shadow-lg px-4 py-3">
+          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] sm:w-auto">
+            <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white shadow-lg px-4 py-3">
               <span className="text-sm font-medium text-slate-700 mr-1">
                 {selectedCount} selected
               </span>
@@ -257,7 +258,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
               {(collections?.length ?? 0) > 0 && (
                 <div className="flex items-center gap-1.5">
                   <Select value={bulkMoveTarget} onValueChange={setBulkMoveTarget}>
-                    <SelectTrigger className="h-8 text-xs w-36">
+                    <SelectTrigger className="h-8 text-xs w-32">
                       <SelectValue placeholder="Move to..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -288,6 +289,6 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
           </div>
         )}
       </main>
-    </div>
+    </AppShell>
   );
 }

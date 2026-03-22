@@ -4,7 +4,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useParams } from "next/navigation";
-import { Sidebar } from "@/components/Sidebar";
+import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -163,13 +163,12 @@ export default function EntryPage() {
   const collection = collections?.find((c) => c._id === entry.collectionId);
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar />
+    <AppShell>
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-2xl mx-auto px-6 py-8">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
           {/* Header */}
           <div className="flex items-center justify-between gap-3 mb-6">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <Link href={entry.collectionId ? `/collections/${entry.collectionId}` : "/"}>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
                   <ArrowLeft className="h-4 w-4" />
@@ -186,7 +185,7 @@ export default function EntryPage() {
                 </Link>
               )}
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 shrink-0">
               <Button
                 variant="outline"
                 size="sm"
@@ -194,7 +193,7 @@ export default function EntryPage() {
                 disabled={!learnings || learnings.length === 0}
               >
                 {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                {copied ? "Copied!" : "Copy"}
+                <span className="hidden sm:inline">{copied ? "Copied!" : "Copy"}</span>
               </Button>
               <Button
                 variant="outline"
@@ -203,7 +202,7 @@ export default function EntryPage() {
                 disabled={!learnings || learnings.length === 0}
               >
                 <Download className="h-4 w-4" />
-                Download .md
+                <span className="hidden sm:inline">Download .md</span>
               </Button>
             </div>
           </div>
@@ -429,7 +428,7 @@ export default function EntryPage() {
           )}
         </div>
       </main>
-    </div>
+    </AppShell>
   );
 }
 
