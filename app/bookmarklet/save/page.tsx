@@ -122,7 +122,7 @@ export default function BookmarkletSavePage() {
               Open Breadcrumbs and sign in first, then click the bookmarklet again.
             </p>
             <button
-              onClick={() => window.open("/", "_blank")}
+              onClick={() => window.open("/app", "_blank")}
               className="mt-1 text-sm font-medium text-slate-700 underline underline-offset-2 hover:text-slate-900 transition-colors"
             >
               Open Breadcrumbs →

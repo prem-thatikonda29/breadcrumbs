@@ -169,7 +169,7 @@ export default function EntryPage() {
           {/* Header */}
           <div className="flex items-center justify-between gap-3 mb-6">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              <Link href={entry.collectionId ? `/collections/${entry.collectionId}` : "/"}>
+              <Link href={entry.collectionId ? `/collections/${entry.collectionId}` : "/app"}>
                 <Button variant="ghost" size="icon" className="h-8 w-8">
                   <ArrowLeft className="h-4 w-4" />
                 </Button>

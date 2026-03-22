@@ -4,9 +4,7 @@ import {
   nextjsMiddlewareRedirect,
 } from "@convex-dev/auth/nextjs/server";
 
-// Pages that require no login (unauthenticated users may visit freely)
-const isPublicPage = createRouteMatcher(["/sign-in", "/bookmarklet/save", "/api/bookmarklet"]);
-// Pages that should redirect authenticated users away (i.e. the sign-in page)
+const isPublicPage = createRouteMatcher(["/", "/sign-in", "/bookmarklet/save", "/api/bookmarklet"]);
 const isAuthPage = createRouteMatcher(["/sign-in"]);
 
 const handler = convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
@@ -14,7 +12,7 @@ const handler = convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
     return nextjsMiddlewareRedirect(request, "/sign-in");
   }
   if (isAuthPage(request) && (await convexAuth.isAuthenticated())) {
-    return nextjsMiddlewareRedirect(request, "/");
+    return nextjsMiddlewareRedirect(request, "/app");
   }
 });
 

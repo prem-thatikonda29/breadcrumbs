@@ -42,11 +42,11 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
 
       <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-0.5">
         <Link
-          href="/"
+          href="/app"
           onClick={onClose}
           className={cn(
             "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-            pathname === "/"
+            pathname === "/app"
               ? "bg-slate-100 text-slate-900"
               : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
           )}
