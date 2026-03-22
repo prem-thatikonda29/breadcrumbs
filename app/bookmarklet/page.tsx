@@ -21,6 +21,7 @@ export default function BookmarkletPage() {
     // Build the anchor entirely outside React — React 19 blocks javascript: URLs
     // at the synthetic event level even with preventDefault, so we bypass it entirely.
     if (anchorContainerRef.current) {
+      anchorContainerRef.current.innerHTML = "";
       const a = document.createElement("a");
       a.href = js;
       a.draggable = true;
@@ -106,6 +107,23 @@ export default function BookmarkletPage() {
             <p className="text-sm text-slate-500">
               Navigate to any page, click the <strong className="font-medium text-slate-700">Breadcrumbs</strong> bookmark, and the URL is instantly saved to your inbox.
             </p>
+          </div>
+
+          {/* Demo video */}
+          <div className="rounded-xl border border-slate-200 bg-white overflow-hidden mb-4">
+            <div className="px-5 py-3 border-b border-slate-100">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                Demo
+              </span>
+            </div>
+            <div className="p-5">
+              <video
+                src="/bookmarklet-demo.mov"
+                controls
+                playsInline
+                className="w-full rounded-lg"
+              />
+            </div>
           </div>
 
           {/* Note */}
