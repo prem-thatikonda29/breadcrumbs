@@ -2,11 +2,11 @@
   "name": "Breadcrumbs",
   "short_name": "Breadcrumbs",
   "description": "Track what you explore. Capture what you learn.",
-  "start_url": "/",
+  "start_url": "/app",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#f8fafc",
-  "theme_color": "#0f172a",
+  "theme_color": "#78350f",
   "icons": [
     {
       "src": "/icons/icon-192.svg",
@@ -20,5 +20,13 @@
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "share_target": {
+    "action": "/bookmarklet/save",
+    "method": "GET",
+    "params": {
+      "url": "url",
+      "title": "title"
+    }
+  }
 }
