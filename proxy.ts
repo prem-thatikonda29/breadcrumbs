@@ -6,12 +6,13 @@ import {
 
 const isPublicPage = createRouteMatcher(["/", "/sign-in", "/bookmarklet/save", "/api/bookmarklet"]);
 const isAuthPage = createRouteMatcher(["/sign-in"]);
+const isLandingPage = createRouteMatcher(["/"]);
 
 const handler = convexAuthNextjsMiddleware(async (request, { convexAuth }) => {
   if (!isPublicPage(request) && !(await convexAuth.isAuthenticated())) {
     return nextjsMiddlewareRedirect(request, "/sign-in");
   }
-  if (isAuthPage(request) && (await convexAuth.isAuthenticated())) {
+  if ((isAuthPage(request) || isLandingPage(request)) && (await convexAuth.isAuthenticated())) {
     return nextjsMiddlewareRedirect(request, "/app");
   }
 });
