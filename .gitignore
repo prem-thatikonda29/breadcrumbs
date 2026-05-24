@@ -2,6 +2,8 @@
 
 # dependencies
 /node_modules
+tests/cypress/node_modules
+tests/selenium/target
 /.pnp
 .pnp.*
 .yarn/*
