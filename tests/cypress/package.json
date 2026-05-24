@@ -1,0 +1,11 @@
+{
+  "name": "breadcrumbs-cypress-tests",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "cypress run",
+    "test:open": "cypress open"
+  },
+  "devDependencies": {
+    "cypress": "^13.7.0"
+  }
+}
