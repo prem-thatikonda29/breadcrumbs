@@ -4,7 +4,8 @@ import {
   nextjsMiddlewareRedirect,
 } from "@convex-dev/auth/nextjs/server";
 
-const isPublicPage = createRouteMatcher(["/", "/sign-in", "/bookmarklet/save", "/api/bookmarklet"]);
+// /opengraph-image has no file extension, so the matcher below doesn't skip it; crawlers must reach it signed out.
+const isPublicPage = createRouteMatcher(["/", "/sign-in", "/bookmarklet/save", "/api/bookmarklet", "/opengraph-image"]);
 const isAuthPage = createRouteMatcher(["/sign-in"]);
 const isLandingPage = createRouteMatcher(["/"]);
 

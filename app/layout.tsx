@@ -4,10 +4,40 @@ import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { ConvexClientProvider } from "@/components/ConvexClientProvider";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { instrumentSerif } from "@/lib/fonts";
+import { siteConfig } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Breadcrumbs",
-  description: "Track what you explore. Capture what you learn.",
+  metadataBase: new URL(siteConfig.url),
+  title: {
+    default: `${siteConfig.name} — ${siteConfig.tagline}`,
+    template: `%s · ${siteConfig.name}`,
+  },
+  description: siteConfig.description,
+  applicationName: siteConfig.name,
+  keywords: [
+    "reading list",
+    "bookmark manager",
+    "learning notes",
+    "personal knowledge management",
+    "markdown export",
+    "bookmarklet",
+  ],
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    siteName: siteConfig.name,
+    title: `${siteConfig.name} — ${siteConfig.tagline}`,
+    description: siteConfig.description,
+    url: "/",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${siteConfig.name} — ${siteConfig.tagline}`,
+    description: siteConfig.description,
+  },
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
