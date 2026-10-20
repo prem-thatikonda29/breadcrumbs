@@ -54,7 +54,7 @@ export default async function Image() {
           <div
             style={{
               fontFamily: "Instrument Serif",
-              fontSize: 104,
+              fontSize: 96,
               lineHeight: 1.04,
               letterSpacing: "-0.025em",
               color: "#000000",
@@ -62,8 +62,26 @@ export default async function Image() {
           >
             A trail of everything you&apos;ve learned.
           </div>
-          <div style={{ marginTop: 32, fontSize: 30, color: "#787774", maxWidth: 860 }}>
+          <div style={{ marginTop: 24, fontSize: 28, color: "#787774", maxWidth: 860 }}>
             Save links. Track what you&apos;ve explored. Export your notes as Markdown.
+          </div>
+          <div style={{ display: "flex", alignItems: "center", marginTop: 36 }}>
+            <div
+              style={{
+                display: "flex",
+                padding: "16px 32px",
+                background: "#111111",
+                color: "white",
+                fontSize: 28,
+                fontWeight: 600,
+                borderRadius: 8,
+              }}
+            >
+              Start for free
+            </div>
+            <div style={{ marginLeft: 24, fontSize: 26, color: "#787774" }}>
+              {new URL(siteConfig.url).host}
+            </div>
           </div>
         </div>
       </div>
