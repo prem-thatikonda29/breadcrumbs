@@ -11,6 +11,7 @@ import {
   useInView,
   animate,
 } from "framer-motion";
+import { siteConfig } from "@/lib/site";
 
 // ─── Animation presets ────────────────────────────────────────────────────────
 
@@ -19,6 +20,19 @@ const ease = [0.16, 1, 0.3, 1] as const;
 const fadeUp = {
   hidden: { opacity: 0, y: 14 },
   show: { opacity: 1, y: 0, transition: { duration: 0.6, ease } },
+};
+
+// ─── Structured data ──────────────────────────────────────────────────────────
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: siteConfig.name,
+  url: siteConfig.url,
+  description: siteConfig.description,
+  applicationCategory: "ProductivityApplication",
+  operatingSystem: "Any",
+  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
 };
 
 const stagger = {
@@ -153,6 +167,10 @@ export default function LandingPage() {
 
   return (
     <div className="bg-[#F7F6F3] text-[#111111] min-h-screen">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
+      />
 
       {/* ── NAV ── */}
       <header className="sticky top-0 z-50 bg-[#F7F6F3]/90 backdrop-blur-sm relative">

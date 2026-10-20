@@ -82,6 +82,8 @@ npx convex deploy   # Deploy backend
 # Deploy frontend to Vercel
 ```
 
+Set `NEXT_PUBLIC_SITE_URL` (e.g. `https://breadcrumbs-rose.vercel.app`) in Vercel so canonical URLs, the sitemap, and Open Graph tags point at the right domain. It defaults to the production URL when unset.
+
 ## License
 
 MIT
