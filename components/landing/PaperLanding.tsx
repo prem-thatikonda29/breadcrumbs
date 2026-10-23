@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { hero, steps, features, why, finalCta, sampleLinks, contactEmail } from "./copy";
 import { ClosingLine, Grain, IslandNav, PillButton, Reveal } from "./ui";
+import { DemoVideo } from "./DemoVideo";
 
 // Landing page: warm paper. One cream palette top to bottom, ink text, a single rust accent.
 
@@ -128,6 +129,22 @@ export function PaperLanding() {
               </Reveal>
             ))}
           </div>
+        </section>
+
+        {/* Demo: the real app, saving a link and coming back to it */}
+        <section aria-label="Demo" className="mx-auto max-w-[1200px] px-5 pb-32 md:px-10 md:pb-44">
+          <Reveal>
+            <div className="rounded-[2.25rem] bg-[#211C16]/[0.04] p-2 ring-1 ring-[#211C16]/[0.06] shadow-[0_48px_96px_-56px_rgba(92,58,28,0.55)]">
+              <DemoVideo
+                src="/breadcrumbs-demo.mp4"
+                poster="/breadcrumbs-demo-poster.jpg"
+                label="Saving a YouTube video with Breadcrumbs, finding it in the library, and writing a note"
+              />
+            </div>
+            <p className="mt-5 max-w-[60ch] text-[15px] leading-relaxed text-[#5E5549]">
+              Half a minute of how I actually use it: save a video from its tab, find it again in my library, and write down what stuck.
+            </p>
+          </Reveal>
         </section>
 
         {/* How it works: a dotted trail joins the steps */}
