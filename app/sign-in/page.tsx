@@ -1,76 +1,15 @@
 "use client";
 
 import { useAuthActions } from "@convex-dev/auth/react";
-import { useState } from "react";
 
 export default function SignInPage() {
   const { signIn } = useAuthActions();
-  const [flow, setFlow] = useState<"signIn" | "signUp">("signIn");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      await signIn("password", { email, password, flow });
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
-  }
 
   return (
     <div className="flex h-screen flex-col items-center justify-center gap-6 bg-white">
       <div className="text-center">
         <h1 className="serif text-4xl text-[#111111]">Breadcrumbs</h1>
         <p className="mt-2 text-sm text-[#787774]">Track what you explore. Capture what you learn.</p>
-      </div>
-
-      {/* Email / password form */}
-      <form onSubmit={handleSubmit} className="flex w-72 flex-col gap-3">
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="rounded-lg border border-[#EAEAEA] px-4 py-2.5 text-sm text-[#111111] outline-none focus:border-[#111111] transition-colors"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          className="rounded-lg border border-[#EAEAEA] px-4 py-2.5 text-sm text-[#111111] outline-none focus:border-[#111111] transition-colors"
-        />
-        {error && <p className="text-xs text-red-500">{error}</p>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-lg bg-[#111111] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#2a2a2a] transition-colors disabled:opacity-50"
-        >
-          {loading ? "..." : flow === "signIn" ? "Sign in" : "Create account"}
-        </button>
-        <button
-          type="button"
-          onClick={() => { setFlow(flow === "signIn" ? "signUp" : "signIn"); setError(""); }}
-          className="text-xs text-[#787774] hover:text-[#111111] transition-colors"
-        >
-          {flow === "signIn" ? "No account? Sign up" : "Have an account? Sign in"}
-        </button>
-      </form>
-
-      {/* Divider */}
-      <div className="flex w-72 items-center gap-3">
-        <div className="h-px flex-1 bg-[#EAEAEA]" />
-        <span className="text-xs text-[#BBBBB8]">or</span>
-        <div className="h-px flex-1 bg-[#EAEAEA]" />
       </div>
 
       {/* Google */}
