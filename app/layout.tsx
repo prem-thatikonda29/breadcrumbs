@@ -3,13 +3,13 @@ import "./globals.css";
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { ConvexClientProvider } from "@/components/ConvexClientProvider";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
-import { instrumentSerif } from "@/lib/fonts";
+import { erode, geist, instrumentSerif } from "@/lib/fonts";
 import { siteConfig } from "@/lib/site";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: `${siteConfig.name} — ${siteConfig.tagline}`,
+    default: `${siteConfig.name}: ${siteConfig.tagline}`,
     template: `%s · ${siteConfig.name}`,
   },
   description: siteConfig.description,
@@ -28,14 +28,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: siteConfig.name,
-    title: `${siteConfig.name} — ${siteConfig.tagline}`,
+    title: `${siteConfig.name}: ${siteConfig.tagline}`,
     description: siteConfig.description,
     url: "/",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: `${siteConfig.name} — ${siteConfig.tagline}`,
+    title: `${siteConfig.name}: ${siteConfig.tagline}`,
     description: siteConfig.description,
   },
   manifest: "/manifest.json",
@@ -56,7 +56,7 @@ export default async function RootLayout({
 }) {
   return (
     <ConvexAuthNextjsServerProvider>
-      <html lang="en" className={`h-full ${instrumentSerif.variable}`}>
+      <html lang="en" className={`h-full ${instrumentSerif.variable} ${erode.variable} ${geist.variable}`}>
         <head>
           <meta name="theme-color" content="#78350f" />
           <link rel="apple-touch-icon" href="/icons/icon-192.svg" />

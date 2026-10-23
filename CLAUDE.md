@@ -69,6 +69,7 @@ app/              # Next.js App Router pages
   privacy/page.tsx            # Privacy page
   sign-in/page.tsx            # Sign-in page
 components/       # Shared React components
+  landing/        # Landing page sections; all landing text lives in landing/copy.ts
   ui/             # Base UI primitives (Button, Dialog, etc.)
 ```
 
@@ -112,6 +113,7 @@ Set in `.env.local`:
 ```
 CONVEX_DEPLOYMENT=...        # auto-set by `npx convex dev`
 NEXT_PUBLIC_CONVEX_URL=...   # auto-set by `npx convex dev`
+NEXT_PUBLIC_CONTACT_EMAIL=... # optional: address behind "email me" in the landing page letter
 ```
 
 Set in Convex dashboard environment variables:

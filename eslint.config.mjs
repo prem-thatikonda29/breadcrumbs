@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Selenium, Cypress and JMeter suites (and JMeter's generated HTML report) are not app code.
+    "tests/**",
   ]),
 ]);
 
