@@ -1,6 +1,13 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import {
+  MAX_TEXT_LENGTH,
+  MAX_TITLE_LENGTH,
+  assertHttpUrl,
+  assertMaxLength,
+  assertOwnCollection,
+} from "./validate";
 
 export const create = mutation({
   args: {
@@ -12,6 +19,10 @@ export const create = mutation({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    assertHttpUrl(args.url);
+    assertMaxLength(args.title, MAX_TITLE_LENGTH, "Title");
+    assertMaxLength(args.notes, MAX_TEXT_LENGTH, "Notes");
+    await assertOwnCollection(ctx, args.collectionId, userId);
 
     const existing = await ctx.db
       .query("entries")
@@ -151,6 +162,9 @@ export const update = mutation({
     if (!userId) throw new Error("Not authenticated");
     const entry = await ctx.db.get(args.entryId);
     if (!entry || entry.userId !== userId) throw new Error("Not found");
+    assertHttpUrl(args.url);
+    assertMaxLength(args.title, MAX_TITLE_LENGTH, "Title");
+    assertMaxLength(args.notes, MAX_TEXT_LENGTH, "Notes");
     await ctx.db.patch(args.entryId, { title: args.title, url: args.url, notes: args.notes });
   },
 });
@@ -165,6 +179,7 @@ export const moveToCollection = mutation({
     if (!userId) throw new Error("Not authenticated");
     const entry = await ctx.db.get(args.entryId);
     if (!entry || entry.userId !== userId) throw new Error("Not found");
+    await assertOwnCollection(ctx, args.collectionId, userId);
     await ctx.db.patch(args.entryId, { collectionId: args.collectionId });
   },
 });
@@ -222,6 +237,7 @@ export const bulkMove = mutation({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    await assertOwnCollection(ctx, args.collectionId, userId);
     for (const entryId of args.entryIds) {
       const entry = await ctx.db.get(entryId);
       if (!entry || entry.userId !== userId) continue;

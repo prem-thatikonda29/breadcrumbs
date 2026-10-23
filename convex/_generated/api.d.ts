@@ -15,6 +15,7 @@ import type * as http from "../http.js";
 import type * as learnings from "../learnings.js";
 import type * as storage from "../storage.js";
 import type * as users from "../users.js";
+import type * as validate from "../validate.js";
 
 import type {
   ApiFromModules,
@@ -30,6 +31,7 @@ declare const fullApi: ApiFromModules<{
   learnings: typeof learnings;
   storage: typeof storage;
   users: typeof users;
+  validate: typeof validate;
 }>;
 
 /**
