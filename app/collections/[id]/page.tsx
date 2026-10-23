@@ -8,6 +8,7 @@ import { AppShell } from "@/components/AppShell";
 import { EntryCard } from "@/components/EntryCard";
 import { AddEntryDialog } from "@/components/AddEntryDialog";
 import { BulkBar } from "@/components/BulkBar";
+import { SegmentedTabs } from "@/components/SegmentedTabs";
 import { EmptyState } from "@/components/EmptyState";
 import { EntryListSkeleton, Skeleton } from "@/components/Skeleton";
 import { ArrowLeft, GripVertical } from "lucide-react";
@@ -142,22 +143,6 @@ export default function CollectionPage() {
   const selectedCount = selectedIds.size;
 
   const loaded = entries !== undefined && collections !== undefined && archived !== undefined;
-  const tab = (key: "unexplored" | "explored", label: string, count: number) => (
-    <button
-      role="tab"
-      aria-selected={section === key}
-      onClick={() => {
-        setSection(key);
-        clearSelection();
-      }}
-      className={cn(
-        "rounded-full px-4 py-1.5 text-sm transition-all duration-300 ease-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
-        section === key ? "bg-card font-medium text-ink shadow-[0_2px_8px_-2px_rgba(92,58,28,0.25)]" : "text-muted hover:text-ink"
-      )}
-    >
-      {label} <span className="tabular-nums text-faint">{count}</span>
-    </button>
-  );
 
   return (
     <AppShell>
@@ -203,10 +188,18 @@ export default function CollectionPage() {
             <div className="shrink-0">{collectionId && <AddEntryDialog defaultCollectionId={collectionId} />}</div>
           </div>
 
-          <div role="tablist" className="mb-5 inline-flex rounded-full bg-sunken p-1">
-            {tab("unexplored", "To explore", unexplored.length)}
-            {tab("explored", "Explored", explored.length)}
-          </div>
+          <SegmentedTabs
+            className="mb-5"
+            value={section}
+            onChange={(key) => {
+              setSection(key);
+              clearSelection();
+            }}
+            tabs={[
+              { key: "unexplored", label: "To explore", count: unexplored.length },
+              { key: "explored", label: "Explored", count: explored.length },
+            ]}
+          />
 
           {entries === undefined ? (
             <EntryListSkeleton />

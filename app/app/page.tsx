@@ -10,11 +10,12 @@ import { AddEntryDialog } from "@/components/AddEntryDialog";
 import { AccountMenu } from "@/components/AccountMenu";
 import { Input } from "@/components/ui/input";
 import { buttonVariants } from "@/components/ui/button";
-import { ElasticSwitch } from "@/components/ui/elastic-switch";
 import { Search } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import { BulkBar } from "@/components/BulkBar";
+import { SegmentedTabs } from "@/components/SegmentedTabs";
+import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/EmptyState";
 import { EntryListSkeleton } from "@/components/Skeleton";
 import { Id } from "@/convex/_generated/dataModel";
@@ -36,7 +37,7 @@ export default function DashboardPage() {
 
 function Dashboard({ onSignOut }: { onSignOut: () => Promise<void> }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [showExplored, setShowExplored] = useState(false);
+  const [section, setSection] = useState<"unexplored" | "explored">("unexplored");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const me = useQuery(api.users.me);
@@ -45,9 +46,10 @@ function Dashboard({ onSignOut }: { onSignOut: () => Promise<void> }) {
   const bulkRemove = useMutation(api.entries.bulkRemove);
   const bulkMove = useMutation(api.entries.bulkMove);
   const unexplored = useQuery(api.entries.getUnexplored);
-  // Only needed to tell "nothing saved yet" apart from "all caught up".
-  const everything = useQuery(api.entries.getAll, unexplored?.length === 0 ? {} : "skip");
-  const allEntries = useQuery(api.entries.getAll, showExplored ? {} : "skip");
+  const everything = useQuery(api.entries.getAll);
+  const explored = everything
+    ?.filter((e) => e.status === "explored")
+    .sort((a, b) => (b.dateExplored ?? 0) - (a.dateExplored ?? 0));
   const titleResults = useQuery(
     api.entries.search,
     searchQuery.trim() ? { query: searchQuery } : "skip"
@@ -56,16 +58,11 @@ function Dashboard({ onSignOut }: { onSignOut: () => Promise<void> }) {
     api.learnings.searchEntryIds,
     searchQuery.trim() ? { query: searchQuery } : "skip"
   );
-  const allForSearch = useQuery(
-    api.entries.getAll,
-    searchQuery.trim() ? {} : "skip"
-  );
-
   const searchResults = searchQuery.trim()
     ? (() => {
-        if (!titleResults || !learningEntryIds || !allForSearch) return undefined;
+        if (!titleResults || !learningEntryIds || !everything) return undefined;
         const titleIds = new Set(titleResults.map((e) => e._id));
-        const extra = allForSearch.filter(
+        const extra = everything.filter(
           (e) => learningEntryIds.includes(e._id) && !titleIds.has(e._id)
         );
         return [...titleResults, ...extra];
@@ -74,8 +71,8 @@ function Dashboard({ onSignOut }: { onSignOut: () => Promise<void> }) {
 
   const entries = searchQuery.trim()
     ? searchResults
-    : showExplored
-    ? allEntries
+    : section === "explored"
+    ? explored
     : unexplored;
 
   const count = unexplored?.length ?? 0;
@@ -145,9 +142,19 @@ function Dashboard({ onSignOut }: { onSignOut: () => Promise<void> }) {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="sm:ml-auto">
-              <ElasticSwitch checked={showExplored} onChange={setShowExplored} label="Show explored" />
-            </div>
+            {/* Search covers every link, so the tabs step back while a query is typed */}
+            <SegmentedTabs
+              className={cn("transition-opacity duration-300 ease-soft sm:ml-auto", query && "opacity-50")}
+              value={section}
+              onChange={(key) => {
+                setSection(key);
+                clearSelection();
+              }}
+              tabs={[
+                { key: "unexplored", label: "To explore", count: unexplored?.length ?? 0 },
+                { key: "explored", label: "Explored", count: explored?.length ?? 0 },
+              ]}
+            />
           </div>
 
           {entries === undefined ? (
@@ -167,8 +174,10 @@ function Dashboard({ onSignOut }: { onSignOut: () => Promise<void> }) {
             </div>
           ) : query ? (
             <EmptyState title={`Nothing matches \u201c${query}\u201d`} body="Search looks through your link titles and the notes you've written." />
-          ) : showExplored || (everything?.length ?? 0) === 0 ? (
-            everything === undefined && !showExplored ? (
+          ) : section === "explored" ? (
+            <EmptyState title="Nothing explored yet" body="When you mark a link as explored, it moves here." />
+          ) : (everything?.length ?? 0) === 0 ? (
+            everything === undefined ? (
               <EntryListSkeleton rows={2} />
             ) : (
               <EmptyState
@@ -184,7 +193,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => Promise<void> }) {
           ) : (
             <EmptyState
               title="All caught up"
-              body="You've explored everything you saved. Turn on Show explored to look back through it, or go find something new."
+              body="You've explored everything you saved. Switch to Explored to look back through it, or go find something new."
             />
           )}
         </div>
@@ -193,7 +202,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => Promise<void> }) {
           <BulkBar
             count={selectedCount}
             collections={collections}
-            onMarkExplored={handleBulkExplored}
+            onMarkExplored={section === "unexplored" ? handleBulkExplored : undefined}
             onMove={handleBulkMove}
             onDelete={handleBulkDelete}
             onClear={clearSelection}
