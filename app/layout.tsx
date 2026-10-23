@@ -9,7 +9,7 @@ import { siteConfig } from "@/lib/site";
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: {
-    default: `${siteConfig.name} — ${siteConfig.tagline}`,
+    default: `${siteConfig.name}: ${siteConfig.tagline}`,
     template: `%s · ${siteConfig.name}`,
   },
   description: siteConfig.description,
@@ -28,14 +28,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: siteConfig.name,
-    title: `${siteConfig.name} — ${siteConfig.tagline}`,
+    title: `${siteConfig.name}: ${siteConfig.tagline}`,
     description: siteConfig.description,
     url: "/",
     locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: `${siteConfig.name} — ${siteConfig.tagline}`,
+    title: `${siteConfig.name}: ${siteConfig.tagline}`,
     description: siteConfig.description,
   },
   manifest: "/manifest.json",

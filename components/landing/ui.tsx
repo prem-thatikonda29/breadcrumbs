@@ -178,21 +178,3 @@ export function ClosingLine({ text, email, linkClassName }: { text: string; emai
     </>
   );
 }
-
-// Endless horizontal band. Content is rendered twice so the loop has no seam.
-export function Marquee({ children, seconds = 40, className }: { children: React.ReactNode; seconds?: number; className?: string }) {
-  return (
-    <div className={`overflow-hidden ${className ?? ""}`}>
-      <motion.div
-        className="flex w-max"
-        animate={{ x: ["0%", "-50%"] }}
-        transition={{ duration: seconds, ease: "linear", repeat: Infinity }}
-      >
-        <div className="flex shrink-0">{children}</div>
-        <div className="flex shrink-0" aria-hidden="true">
-          {children}
-        </div>
-      </motion.div>
-    </div>
-  );
-}

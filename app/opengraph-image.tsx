@@ -3,14 +3,13 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { siteConfig } from "@/lib/site";
 
-export const alt = `${siteConfig.name} — ${siteConfig.tagline}`;
+export const alt = `${siteConfig.name}: ${siteConfig.tagline}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default async function Image() {
-  const instrumentSerif = await readFile(
-    join(process.cwd(), "assets/InstrumentSerif-Regular.ttf")
-  );
+  // Satori can't read woff2, so the share image uses the static OTF.
+  const erode = await readFile(join(process.cwd(), "assets/fonts/erode/Erode-Regular.otf"));
 
   return new ImageResponse(
     (
@@ -22,8 +21,9 @@ export default async function Image() {
           flexDirection: "column",
           justifyContent: "space-between",
           padding: "72px 80px",
-          background: "#F7F6F3",
-          color: "#111111",
+          background: "#F3EEE4",
+          color: "#211C16",
+          fontFamily: "Erode",
         }}
       >
         {/* Wordmark: the three-dot trail from the app icon */}
@@ -34,43 +34,33 @@ export default async function Image() {
               alignItems: "center",
               gap: 10,
               padding: "14px 16px",
-              background: "#0f172a",
+              background: "#211C16",
               borderRadius: 14,
             }}
           >
             {[1, 0.7, 0.4].map((opacity) => (
               <div
                 key={opacity}
-                style={{ width: 14, height: 14, borderRadius: 7, background: "white", opacity }}
+                style={{ width: 14, height: 14, borderRadius: 7, background: "#F3EEE4", opacity }}
               />
             ))}
           </div>
-          <div style={{ fontSize: 30, fontWeight: 600, letterSpacing: "-0.01em" }}>
-            {siteConfig.name}
-          </div>
+          <div style={{ fontSize: 34, letterSpacing: "-0.01em" }}>{siteConfig.name}</div>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <div
-            style={{
-              fontFamily: "Instrument Serif",
-              fontSize: 104,
-              lineHeight: 1.04,
-              letterSpacing: "-0.025em",
-              color: "#000000",
-            }}
-          >
-            A trail of everything you&apos;ve learned.
+          <div style={{ fontSize: 92, lineHeight: 1.02, letterSpacing: "-0.03em", maxWidth: 1000 }}>
+            {siteConfig.tagline}
           </div>
-          <div style={{ marginTop: 32, fontSize: 30, color: "#787774", maxWidth: 860 }}>
-            Save links. Track what you&apos;ve explored. Export your notes as Markdown.
+          <div style={{ marginTop: 32, fontSize: 32, color: "#9C4A2A" }}>
+            Save it in one click. Come back when you have time.
           </div>
         </div>
       </div>
     ),
     {
       ...size,
-      fonts: [{ name: "Instrument Serif", data: instrumentSerif, style: "normal", weight: 400 }],
+      fonts: [{ name: "Erode", data: erode, style: "normal", weight: 400 }],
     }
   );
 }

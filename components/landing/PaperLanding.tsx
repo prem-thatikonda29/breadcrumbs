@@ -2,7 +2,7 @@ import Link from "next/link";
 import { hero, steps, features, why, finalCta, sampleLinks, contactEmail } from "./copy";
 import { ClosingLine, Grain, IslandNav, PillButton, Reveal } from "./ui";
 
-// Direction A: warm paper. One cream palette top to bottom, ink text, a single rust accent.
+// Landing page: warm paper. One cream palette top to bottom, ink text, a single rust accent.
 
 const SLIP_TILT = ["md:-rotate-[3deg]", "md:rotate-[2deg]", "md:-rotate-[1deg]", "md:rotate-[1.5deg]"];
 
@@ -26,6 +26,51 @@ function Slip({ link, index }: { link: (typeof sampleLinks)[number]; index: numb
         </p>
       </div>
     </div>
+  );
+}
+
+function FeatureVisual({ index }: { index: number }) {
+  if (index === 0) {
+    return (
+      <div className="flex flex-wrap gap-2">
+        {[
+          ["Talks to watch", "#9C4A2A"],
+          ["Recipes", "#A99E90"],
+          ["Fonts", "#9C4A2A"],
+          ["Read this weekend", "#A99E90"],
+        ].map(([name, dot]) => (
+          <span key={name} className="flex items-center gap-2 rounded-xl bg-[#F3EEE4] px-3 py-2 text-[13px] text-[#211C16]">
+            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: dot }} />
+            {name}
+          </span>
+        ))}
+      </div>
+    );
+  }
+  if (index === 1) {
+    return (
+      <div className="rounded-xl bg-[#F3EEE4] px-4 py-3 text-[13px] leading-relaxed text-[#3D352C]">
+        Use the variable axis for weight instead of shipping six files.
+        <span className="mt-2 block tracking-[0.2em] text-[#9C4A2A]">●●●●○</span>
+      </div>
+    );
+  }
+  if (index === 2) {
+    return (
+      <div className="flex items-center gap-3 rounded-xl bg-[#F3EEE4] px-4 py-3 text-[13px] text-[#211C16]">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-4 w-4 text-[#9C4A2A]" aria-hidden="true">
+          <circle cx="11" cy="11" r="6.5" />
+          <path d="m20 20-4.2-4.2" strokeLinecap="round" />
+        </svg>
+        garlic noodles
+        <span className="ml-auto text-[12px] text-[#857A6C]">1 result</span>
+      </div>
+    );
+  }
+  return (
+    <pre className="overflow-hidden rounded-xl bg-[#F3EEE4] px-4 py-3 font-mono text-[12px] leading-relaxed text-[#3D352C]">
+      {"# Talks to watch\n\n## Building a variable font\nyoutube.com\n> Use the variable axis..."}
+    </pre>
   );
 }
 
@@ -112,22 +157,29 @@ export function PaperLanding() {
           </div>
         </section>
 
-        {/* Features: zig-zag rows, no boxes */}
+        {/* Features: asymmetric bento, labels sit under each tile */}
         <section className="mx-auto max-w-[1200px] px-5 pb-32 md:px-10 md:pb-44">
           <Reveal>
             <h2 className="max-w-[18ch] font-display text-[36px] leading-[1.02] tracking-[-0.03em] text-balance md:text-[48px]">
               Small on purpose. Here&apos;s what&apos;s in it.
             </h2>
           </Reveal>
-          <div className="mt-16 grid gap-x-10 gap-y-14 md:grid-cols-12">
+          <div className="mt-14 grid grid-cols-1 gap-x-5 gap-y-12 md:grid-cols-12">
             {features.map((f, i) => (
               <Reveal
                 key={f.title}
                 delay={(i % 2) * 0.08}
-                className={i % 2 ? "md:col-span-5 md:col-start-8 md:mt-24" : "md:col-span-5"}
+                className={`min-w-0 ${i === 0 || i === 3 ? "md:col-span-7" : "md:col-span-5"}`}
               >
-                <h3 className="font-display text-[28px] leading-tight tracking-[-0.02em]">{f.title}</h3>
-                <p className="mt-3 max-w-[46ch] text-[16px] leading-relaxed text-[#5E5549]">{f.body}</p>
+                <div className="rounded-[2rem] bg-[#211C16]/[0.04] p-1.5 ring-1 ring-[#211C16]/[0.06]">
+                  <div className="flex min-h-[180px] items-center rounded-[calc(2rem-0.375rem)] bg-[#FBF8F1] p-8 shadow-[0_24px_48px_-32px_rgba(92,58,28,0.3),inset_0_1px_0_rgba(255,255,255,0.8)]">
+                    <div className="w-full min-w-0">
+                      <FeatureVisual index={i} />
+                    </div>
+                  </div>
+                </div>
+                <h3 className="mt-5 font-display text-[26px] leading-tight tracking-[-0.02em]">{f.title}</h3>
+                <p className="mt-2 max-w-[46ch] text-[16px] leading-relaxed text-[#5E5549]">{f.body}</p>
               </Reveal>
             ))}
           </div>

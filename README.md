@@ -45,6 +45,8 @@ npx convex dev   # Convex backend: creates the project on first run and watches 
 npm run dev      # Next.js on http://localhost:3000
 ```
 
+Optionally set `NEXT_PUBLIC_CONTACT_EMAIL` (in `.env.local` and on Vercel) to link the "email me" line on the landing page.
+
 Set these in the Convex dashboard's environment variables:
 
 ```
@@ -66,7 +68,7 @@ npm test
 ```
 proxy.ts              # Auth redirects (Next 16 proxy, formerly middleware)
 app/
-  page.tsx            # / landing page
+  page.tsx            # / landing page (sections in components/landing/)
   app/page.tsx        # /app library (signed in)
   collections/[id]/   # Collection detail, drag-to-reorder
   entries/[id]/       # Link detail and learning notes
