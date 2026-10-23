@@ -13,7 +13,6 @@ import type * as collections from "../collections.js";
 import type * as entries from "../entries.js";
 import type * as http from "../http.js";
 import type * as learnings from "../learnings.js";
-import type * as migrations from "../migrations.js";
 import type * as storage from "../storage.js";
 import type * as users from "../users.js";
 import type * as validate from "../validate.js";
@@ -30,7 +29,6 @@ declare const fullApi: ApiFromModules<{
   entries: typeof entries;
   http: typeof http;
   learnings: typeof learnings;
-  migrations: typeof migrations;
   storage: typeof storage;
   users: typeof users;
   validate: typeof validate;
