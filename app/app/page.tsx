@@ -7,12 +7,12 @@ import { useConvexAuth } from "convex/react";
 import { AppShell } from "@/components/AppShell";
 import { EntryCard } from "@/components/EntryCard";
 import { AddEntryDialog } from "@/components/AddEntryDialog";
+import { AccountMenu } from "@/components/AccountMenu";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ElasticSwitch } from "@/components/ui/elastic-switch";
-import { Search, BookOpen, LogOut, CheckCircle, Trash2, FolderInput } from "lucide-react";
+import { Search, BookOpen, CheckCircle, Trash2, FolderInput } from "lucide-react";
 import { useState } from "react";
-import Image from "next/image";
 import {
   Select,
   SelectContent,
@@ -37,7 +37,7 @@ export default function DashboardPage() {
   return <Dashboard onSignOut={signOut} />;
 }
 
-function Dashboard({ onSignOut }: { onSignOut: () => void }) {
+function Dashboard({ onSignOut }: { onSignOut: () => Promise<void> }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [showExplored, setShowExplored] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -115,26 +115,7 @@ function Dashboard({ onSignOut }: { onSignOut: () => void }) {
   const selectedCount = selectedIds.size;
 
   const profileButton = (
-    <button
-      onClick={onSignOut}
-      title="Sign out"
-      className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-[#F7F6F3] transition-colors"
-    >
-      {me?.image ? (
-        <Image
-          src={me.image}
-          alt={me.name ?? "User"}
-          width={28}
-          height={28}
-          className="rounded-full"
-        />
-      ) : (
-        <div className="h-7 w-7 rounded-full bg-[#EAEAEA] flex items-center justify-center text-xs font-medium text-[#787774]">
-          {me?.name?.[0]?.toUpperCase() ?? "?"}
-        </div>
-      )}
-      <LogOut className="h-3.5 w-3.5 text-[#BBBBB8]" />
-    </button>
+    <AccountMenu name={me?.name} image={me?.image} onSignOut={onSignOut} />
   );
 
   return (

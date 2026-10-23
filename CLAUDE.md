@@ -38,25 +38,35 @@ npx convex deploy  # Deploy backend
 
 ## Architecture
 
-**Key principle:** No separate API routes. All backend logic lives in `convex/` as typed TypeScript functions called directly from the frontend via Convex hooks (`useQuery`, `useMutation`).
+**Key principle:** No separate API routes. All backend logic lives in `convex/` as typed TypeScript functions called directly from the frontend via Convex hooks (`useQuery`, `useMutation`). The one exception is `app/api/bookmarklet/route.ts`, which the bookmarklet pop-up posts to.
+
+**Security rules for Convex functions:** every public query/mutation must resolve the user with `getAuthUserId` and check ownership of every document it reads or writes, including referenced IDs (e.g. a target `collectionId`). Use the helpers in `convex/validate.ts` for URL, length, rating, collection-ownership and icon checks. Add a `convex-test` case in `convex/*.test.ts` for any new rule.
 
 ### Directory Structure
 
 ```
-proxy.ts          # Auth middleware (Next.js 16 uses proxy.ts, not middleware.ts)
+proxy.ts          # Auth redirects (Next.js 16 uses proxy.ts, not middleware.ts)
 convex/           # All backend logic
   schema.ts       # Table definitions and indexes
   auth.config.ts  # Auth providers config
-  auth.ts         # Auth setup
-  collections.ts  # Collections CRUD
-  entries.ts      # Entries CRUD + markExplored
-  learnings.ts    # Learning notes CRUD
+  auth.ts         # Auth setup (Google only)
+  collections.ts  # Collections CRUD, icons, archive
+  entries.ts      # Entries CRUD, explored state, reorder, bulk actions, search
+  learnings.ts    # Learning notes CRUD, export query, search
+  users.ts        # Current user, deleteAccount
+  storage.ts      # Upload URLs, orphaned-file cleanup
+  crons.ts        # Daily orphaned-upload cleanup
+  validate.ts     # Shared validation/ownership helpers
+  *.test.ts       # convex-test suites (run with `npm test`)
 app/              # Next.js App Router pages
   layout.tsx      # Root layout with ConvexProvider + AuthProvider
-  page.tsx        # / — Dashboard inbox (unexplored entries)
+  page.tsx        # / — Landing page
+  app/page.tsx    # /app — Library (unexplored entries, search, bulk actions)
   collections/[id]/page.tsx   # Collection detail
   entries/[id]/page.tsx       # Entry detail + learning notes
   export/page.tsx             # Markdown export
+  bookmarklet/                # Bookmarklet install page + save pop-up (also the PWA share target)
+  privacy/page.tsx            # Privacy page
   sign-in/page.tsx            # Sign-in page
 components/       # Shared React components
   ui/             # Base UI primitives (Button, Dialog, etc.)
@@ -66,29 +76,34 @@ components/       # Shared React components
 
 Three tables with a nested one-to-many hierarchy:
 
-**collections** — `userId, name, color?, createdAt`
-- Index: `by_userId`
+**collections** — `userId, name, color?, description?, iconStorageId?, archived?, createdAt`
+- Index: `by_userId`, `by_iconStorageId`
 
-**entries** — `userId, collectionId, title, url, status ("not_explored" | "explored"), dateAdded, dateExplored?`
-- Index: `by_userId_status` (dashboard query), `by_collectionId`
+**entries** — `userId, collectionId?, title, url, status ("not_explored" | "explored"), dateAdded, dateExplored?, notes?, order?`
+- Index: `by_userId_status` (dashboard query), `by_collectionId`, `by_userId`, `by_userId_url`; search index on `title`
 
 **learnings** — `entryId, userId, content, rating? (1–5), createdAt, updatedAt`
-- Index: `by_entryId`, `by_userId`
+- Index: `by_entryId`, `by_userId`; search index on `content`
 
 ### Core Convex Functions
 
 | Module | Functions |
 |---|---|
-| `collections` | `create`, `list`, `update`, `remove` (cascades to entries) |
-| `entries` | `create`, `getUnexplored`, `getAll`, `getByCollection`, `get`, `markExplored`, `remove` |
-| `learnings` | `create`, `getByEntry`, `update`, `remove` |
+| `collections` | `create`, `list`, `listArchived`, `update`, `archive`, `unarchive`, `remove` (cascades to entries, learnings, icon) |
+| `entries` | `create`, `get`, `getUnexplored`, `getAll`, `getByCollection`, `markExplored`, `markUnexplored`, `update`, `moveToCollection`, `reorder`, `remove`, `bulkMarkExplored`, `bulkMove`, `bulkRemove`, `search` |
+| `learnings` | `create`, `getByEntry`, `getUserLearnings`, `update`, `remove`, `searchEntryIds` |
+| `users` | `me`, `deleteAccount` |
+| `storage` | `generateUploadUrl`, `cleanupOrphanedFiles` (internal, daily cron) |
 
 ### Page Structure
 
-- `/` — Inbox: unexplored entries list, search, [+ Add] button, sidebar with collections
+- `/` — Landing page (signed-in users are redirected to `/app`)
+- `/app` — Library: unexplored entries, search, [+ Add], bulk actions, account menu
 - `/collections/:id` — Entries split into "Not Explored" / "Explored" sections
 - `/entries/:id` — Entry detail with URL, status, and list of learning note cards
 - `/export` — Select collection → preview formatted Markdown → copy/download as `.md`
+- `/bookmarklet` — Bookmarklet install; `/bookmarklet/save` — save pop-up / share target
+- `/privacy` — Privacy page
 - `/sign-in` — Google OAuth sign-in page
 
 ### Auth Setup (required before first run)

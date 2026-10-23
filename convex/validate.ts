@@ -1,9 +1,10 @@
-import { QueryCtx } from "./_generated/server";
+import { MutationCtx, QueryCtx } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
 
 export const MAX_TITLE_LENGTH = 500;
 export const MAX_URL_LENGTH = 2048;
 export const MAX_TEXT_LENGTH = 20000;
+export const MAX_ICON_BYTES = 1024 * 1024;
 
 export function assertMaxLength(value: string | undefined, max: number, field: string) {
   if (value !== undefined && value.length > max) {
@@ -38,4 +39,18 @@ export async function assertOwnCollection(
   if (collectionId === undefined) return;
   const collection = await ctx.db.get(collectionId);
   if (!collection || collection.userId !== userId) throw new Error("Collection not found");
+}
+
+// A new collection icon must be a fresh upload: an image under the size cap that no
+// collection references yet. Rejected uploads are removed by storage.cleanupOrphanedFiles.
+export async function assertNewIcon(ctx: MutationCtx, storageId: Id<"_storage">) {
+  const file = await ctx.db.system.get(storageId);
+  const inUse = await ctx.db
+    .query("collections")
+    .withIndex("by_iconStorageId", (q) => q.eq("iconStorageId", storageId))
+    .first();
+  if (!file || inUse) throw new Error("Icon upload not found");
+  if (!file.contentType?.startsWith("image/") || file.size > MAX_ICON_BYTES) {
+    throw new Error("Icon must be an image under 1 MB");
+  }
 }

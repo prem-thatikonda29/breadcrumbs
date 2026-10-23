@@ -11,6 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+// Matches MAX_ICON_BYTES in convex/validate.ts, which enforces it server-side.
+const MAX_ICON_BYTES = 1024 * 1024;
+
 const COLORS = [
   "#6366f1", "#8b5cf6", "#ec4899", "#ef4444",
   "#f97316", "#eab308", "#22c55e", "#06b6d4",
@@ -43,11 +46,13 @@ export function CollectionModal({ trigger, mode, collection }: Props) {
   const [iconFile, setIconFile] = useState<File | null>(null);
   const [iconPreview, setIconPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function handleOpenChange(isOpen: boolean) {
     setOpen(isOpen);
+    setError("");
     if (isOpen && mode === "edit" && collection) {
       setName(collection.name);
       setDescription(collection.description ?? "");
@@ -66,9 +71,14 @@ export function CollectionModal({ trigger, mode, collection }: Props) {
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    e.target.value = "";
+    if (!file.type.startsWith("image/") || file.size > MAX_ICON_BYTES) {
+      setError("Icon must be an image under 1 MB");
+      return;
+    }
+    setError("");
     setIconFile(file);
     setIconPreview(URL.createObjectURL(file));
-    e.target.value = "";
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -107,6 +117,8 @@ export function CollectionModal({ trigger, mode, collection }: Props) {
         });
       }
       setOpen(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -191,6 +203,7 @@ export function CollectionModal({ trigger, mode, collection }: Props) {
                 ))}
               </div>
 
+              {error && <p className="text-xs text-red-500">{error}</p>}
               <Button
                 type="submit"
                 className="w-full !mt-5"

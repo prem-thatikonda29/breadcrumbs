@@ -1,6 +1,7 @@
 "use client";
 
 import { useAuthActions } from "@convex-dev/auth/react";
+import Link from "next/link";
 
 export default function SignInPage() {
   const { signIn } = useAuthActions();
@@ -25,6 +26,10 @@ export default function SignInPage() {
         </svg>
         Sign in with Google
       </button>
+
+      <Link href="/privacy" className="text-xs text-[#BBBBB8] hover:text-[#787774] transition-colors">
+        Privacy
+      </Link>
     </div>
   );
 }
