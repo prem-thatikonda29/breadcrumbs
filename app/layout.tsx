@@ -3,7 +3,7 @@ import "./globals.css";
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { ConvexClientProvider } from "@/components/ConvexClientProvider";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
-import { erode, geist, instrumentSerif } from "@/lib/fonts";
+import { erode, geist } from "@/lib/fonts";
 import { siteConfig } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -56,9 +56,9 @@ export default async function RootLayout({
 }) {
   return (
     <ConvexAuthNextjsServerProvider>
-      <html lang="en" className={`h-full ${instrumentSerif.variable} ${erode.variable} ${geist.variable}`}>
+      <html lang="en" className={`h-full ${erode.variable} ${geist.variable}`}>
         <head>
-          <meta name="theme-color" content="#78350f" />
+          <meta name="theme-color" content="#F3EEE4" />
           <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
         </head>
         <body className="min-h-full">

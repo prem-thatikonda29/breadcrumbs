@@ -9,17 +9,14 @@ import { EntryCard } from "@/components/EntryCard";
 import { AddEntryDialog } from "@/components/AddEntryDialog";
 import { AccountMenu } from "@/components/AccountMenu";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { ElasticSwitch } from "@/components/ui/elastic-switch";
-import { Search, BookOpen, CheckCircle, Trash2, FolderInput } from "lucide-react";
+import { Search } from "lucide-react";
 import { useState } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import Link from "next/link";
+import { BulkBar } from "@/components/BulkBar";
+import { EmptyState } from "@/components/EmptyState";
+import { EntryListSkeleton } from "@/components/Skeleton";
 import { Id } from "@/convex/_generated/dataModel";
 
 export default function DashboardPage() {
@@ -28,8 +25,8 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#EAEAEA] border-t-[#111111]" />
+      <div className="mx-auto max-w-2xl px-4 py-24">
+        <EntryListSkeleton />
       </div>
     );
   }
@@ -41,7 +38,6 @@ function Dashboard({ onSignOut }: { onSignOut: () => Promise<void> }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [showExplored, setShowExplored] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [bulkMoveTarget, setBulkMoveTarget] = useState("");
 
   const me = useQuery(api.users.me);
   const collections = useQuery(api.collections.list);
@@ -49,6 +45,8 @@ function Dashboard({ onSignOut }: { onSignOut: () => Promise<void> }) {
   const bulkRemove = useMutation(api.entries.bulkRemove);
   const bulkMove = useMutation(api.entries.bulkMove);
   const unexplored = useQuery(api.entries.getUnexplored);
+  // Only needed to tell "nothing saved yet" apart from "all caught up".
+  const everything = useQuery(api.entries.getAll, unexplored?.length === 0 ? {} : "skip");
   const allEntries = useQuery(api.entries.getAll, showExplored ? {} : "skip");
   const titleResults = useQuery(
     api.entries.search,
@@ -93,7 +91,6 @@ function Dashboard({ onSignOut }: { onSignOut: () => Promise<void> }) {
 
   function clearSelection() {
     setSelectedIds(new Set());
-    setBulkMoveTarget("");
   }
 
   async function handleBulkExplored() {
@@ -106,9 +103,8 @@ function Dashboard({ onSignOut }: { onSignOut: () => Promise<void> }) {
     clearSelection();
   }
 
-  async function handleBulkMove() {
-    if (!bulkMoveTarget) return;
-    await bulkMove({ entryIds: [...selectedIds] as Id<"entries">[], collectionId: bulkMoveTarget as Id<"collections"> });
+  async function handleBulkMove(collectionId: string) {
+    await bulkMove({ entryIds: [...selectedIds] as Id<"entries">[], collectionId: collectionId as Id<"collections"> });
     clearSelection();
   }
 
@@ -118,63 +114,46 @@ function Dashboard({ onSignOut }: { onSignOut: () => Promise<void> }) {
     <AccountMenu name={me?.name} image={me?.image} onSignOut={onSignOut} />
   );
 
+  const query = searchQuery.trim();
+
   return (
     <AppShell topbarRight={profileButton}>
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
-          <div className="flex items-center justify-between mb-6 gap-3">
+        <div className="mx-auto max-w-2xl px-4 pb-32 pt-6 sm:px-6 sm:pt-12">
+          <div className="mb-8 flex items-end justify-between gap-4">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-[#111111] flex items-center gap-2">
-                <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-[#787774]" />
-                Library
-                {count > 0 && (
-                  <span className="ml-1 rounded-full bg-[#111111] px-2 py-0.5 text-xs font-medium text-white">
-                    {count}
-                  </span>
-                )}
-              </h1>
+              <h1 className="serif text-[36px] leading-none tracking-[-0.03em] text-ink sm:text-[44px]">Library</h1>
+              <p className="mt-2 text-sm tabular-nums text-faint">
+                {unexplored === undefined ? "\u00a0" : count === 0 ? "Nothing waiting" : `${count} to explore`}
+              </p>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex shrink-0 items-center gap-3">
               <AddEntryDialog />
-              {/* Hidden on mobile — shown in the AppShell top bar instead */}
-              <div className="hidden md:block">
-                {profileButton}
-              </div>
+              {/* Hidden on mobile, shown in the AppShell top bar instead */}
+              <div className="hidden md:block">{profileButton}</div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 mb-4">
-            <div className="relative max-w-sm w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#BBBBB8]" />
+          <div className="mb-5 flex flex-wrap items-center gap-3">
+            <div className="relative w-full sm:max-w-sm">
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ghost" strokeWidth={1.5} />
               <Input
-                placeholder="Search entries..."
-                className="pl-9"
+                placeholder="Search titles and notes"
+                aria-label="Search titles and notes"
+                className="pl-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="ml-auto">
-              <ElasticSwitch
-                checked={showExplored}
-                onChange={setShowExplored}
-                label="Show explored"
-              />
+            <div className="sm:ml-auto">
+              <ElasticSwitch checked={showExplored} onChange={setShowExplored} label="Show explored" />
             </div>
           </div>
 
           {entries === undefined ? (
-            <div className="flex justify-center py-12">
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#EAEAEA] border-t-[#111111]" />
-            </div>
-          ) : entries.length === 0 ? (
-            <div className="text-center py-16 text-[#BBBBB8]">
-              <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-40" />
-              <p className="text-sm">
-                {searchQuery ? "No results found" : "Nothing to explore yet. Add something!"}
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-2">
+            <EntryListSkeleton />
+          ) : entries.length > 0 ? (
+            <div className="space-y-2.5">
               {entries.map((entry) => (
                 <EntryCard
                   key={entry._id}
@@ -186,52 +165,39 @@ function Dashboard({ onSignOut }: { onSignOut: () => Promise<void> }) {
                 />
               ))}
             </div>
+          ) : query ? (
+            <EmptyState title={`Nothing matches \u201c${query}\u201d`} body="Search looks through your link titles and the notes you've written." />
+          ) : showExplored || (everything?.length ?? 0) === 0 ? (
+            everything === undefined && !showExplored ? (
+              <EntryListSkeleton rows={2} />
+            ) : (
+              <EmptyState
+                title="Nothing saved yet"
+                body="Add your first link here, or put the bookmarklet in your bookmarks bar so you can save any page in one click."
+              >
+                <AddEntryDialog />
+                <Link href="/bookmarklet" className={buttonVariants({ variant: "outline" })}>
+                  Get the bookmarklet
+                </Link>
+              </EmptyState>
+            )
+          ) : (
+            <EmptyState
+              title="All caught up"
+              body="You've explored everything you saved. Turn on Show explored to look back through it, or go find something new."
+            />
           )}
         </div>
 
-        {/* Bulk action bar */}
         {selectedCount > 0 && (
-          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] sm:w-auto">
-            <div className="flex flex-wrap items-center gap-2 rounded-xl border border-[#EAEAEA] bg-white shadow-lg px-4 py-3">
-              <span className="text-sm font-medium text-[#333333] mr-1">
-                {selectedCount} selected
-              </span>
-              <Button size="sm" variant="outline" onClick={handleBulkExplored} className="gap-1.5">
-                <CheckCircle className="h-3.5 w-3.5" />
-                Mark explored
-              </Button>
-              {(collections?.length ?? 0) > 0 && (
-                <div className="flex items-center gap-1.5">
-                  <Select value={bulkMoveTarget} onValueChange={setBulkMoveTarget}>
-                    <SelectTrigger className="h-8 text-xs w-32">
-                      <SelectValue placeholder="Move to..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {collections!.map((col) => (
-                        <SelectItem key={col._id} value={col._id}>
-                          <span className="flex items-center gap-2">
-                            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: col.color ?? "#94a3b8" }} />
-                            {col.name}
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Button size="sm" variant="outline" disabled={!bulkMoveTarget} onClick={handleBulkMove} className="gap-1.5">
-                    <FolderInput className="h-3.5 w-3.5" />
-                    Move
-                  </Button>
-                </div>
-              )}
-              <Button size="sm" variant="outline" onClick={handleBulkDelete} className="gap-1.5 text-red-500 hover:text-red-600 hover:border-red-300">
-                <Trash2 className="h-3.5 w-3.5" />
-                Delete
-              </Button>
-              <button onClick={clearSelection} className="text-xs text-[#BBBBB8] hover:text-[#787774] ml-1">
-                Cancel
-              </button>
-            </div>
-          </div>
+          <BulkBar
+            count={selectedCount}
+            collections={collections}
+            onMarkExplored={handleBulkExplored}
+            onMove={handleBulkMove}
+            onDelete={handleBulkDelete}
+            onClear={clearSelection}
+          />
         )}
       </main>
     </AppShell>

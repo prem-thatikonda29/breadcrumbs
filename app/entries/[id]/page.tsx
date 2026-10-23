@@ -32,6 +32,7 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { cn, formatDate, formatDateTime, getDomain, starsFromRating } from "@/lib/utils";
+import { collectionColor } from "@/lib/collection-colors";
 
 export default function EntryPage() {
   const params = useParams();
@@ -178,7 +179,7 @@ export default function EntryPage() {
                 <Link href={`/collections/${collection._id}`}>
                   <span
                     className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium text-white"
-                    style={{ backgroundColor: collection.color ?? "#94a3b8" }}
+                    style={{ backgroundColor: collectionColor(collection.color) }}
                   >
                     {collection.name}
                   </span>

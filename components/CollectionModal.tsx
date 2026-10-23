@@ -10,14 +10,12 @@ import { X, ImageIcon, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { COLLECTION_COLORS, collectionColor } from "@/lib/collection-colors";
 
 // Matches MAX_ICON_BYTES in convex/validate.ts, which enforces it server-side.
 const MAX_ICON_BYTES = 1024 * 1024;
 
-const COLORS = [
-  "#6366f1", "#8b5cf6", "#ec4899", "#ef4444",
-  "#f97316", "#eab308", "#22c55e", "#06b6d4",
-];
+const COLORS = COLLECTION_COLORS;
 
 interface CollectionData {
   _id: Id<"collections">;
@@ -29,26 +27,32 @@ interface CollectionData {
 }
 
 interface Props {
-  trigger: React.ReactNode;
+  // Either pass a trigger, or control it with open/onOpenChange (remount with a new key to reset the fields).
+  trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   mode: "create" | "edit";
   collection?: CollectionData;
 }
 
-export function CollectionModal({ trigger, mode, collection }: Props) {
+export function CollectionModal({ trigger, open: openProp, onOpenChange, mode, collection }: Props) {
   const createCollection = useMutation(api.collections.create);
   const updateCollection = useMutation(api.collections.update);
   const generateUploadUrl = useMutation(api.storage.generateUploadUrl);
 
-  const [open, setOpen] = useState(false);
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [color, setColor] = useState(COLORS[0]);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = openProp ?? internalOpen;
+  const setOpen = (next: boolean) => (openProp === undefined ? setInternalOpen(next) : onOpenChange?.(next));
+  const [name, setName] = useState(collection?.name ?? "");
+  const [description, setDescription] = useState(collection?.description ?? "");
+  const [color, setColor] = useState(collectionColor(collection?.color ?? COLORS[0]));
   const [iconFile, setIconFile] = useState<File | null>(null);
-  const [iconPreview, setIconPreview] = useState<string | null>(null);
+  const [iconPreview, setIconPreview] = useState<string | null>(collection?.iconUrl ?? null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
 
   function handleOpenChange(isOpen: boolean) {
     setOpen(isOpen);
@@ -56,7 +60,7 @@ export function CollectionModal({ trigger, mode, collection }: Props) {
     if (isOpen && mode === "edit" && collection) {
       setName(collection.name);
       setDescription(collection.description ?? "");
-      setColor(collection.color ?? COLORS[0]);
+      setColor(collectionColor(collection.color ?? COLORS[0]));
       setIconPreview(collection.iconUrl ?? null);
       setIconFile(null);
     } else if (!isOpen) {
@@ -126,12 +130,17 @@ export function CollectionModal({ trigger, mode, collection }: Props) {
 
   return (
     <DialogPrimitive.Root open={open} onOpenChange={handleOpenChange}>
-      <DialogPrimitive.Trigger asChild>{trigger}</DialogPrimitive.Trigger>
+      {trigger && <DialogPrimitive.Trigger asChild>{trigger}</DialogPrimitive.Trigger>}
       <DialogPortal>
         <DialogOverlay />
-        <DialogPrimitive.Content className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-xl bg-white shadow-xl overflow-hidden focus:outline-none">
+        <DialogPrimitive.Content
+          onOpenAutoFocus={(e) => {
+            e.preventDefault();
+            nameRef.current?.focus();
+          }}
+          className="fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] max-w-md -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-[1.75rem] bg-card ring-1 ring-line shadow-[0_40px_80px_-32px_rgba(92,58,28,0.45)] focus:outline-none">
           <DialogPrimitive.Title className="sr-only">
-            {mode === "create" ? "New Collection" : "Edit Collection"}
+            {mode === "create" ? "New collection" : "Edit collection"}
           </DialogPrimitive.Title>
           <DialogPrimitive.Description className="sr-only">
             {mode === "create" ? "Create a new collection" : "Edit collection details"}
@@ -139,31 +148,32 @@ export function CollectionModal({ trigger, mode, collection }: Props) {
           <form onSubmit={handleSubmit}>
             {/* Top colored section */}
             <div
-              className="h-28 transition-colors duration-200"
+              className="h-28 transition-colors duration-500 ease-soft"
               style={{ backgroundColor: color }}
             />
 
             {/* Divider line + icon straddling it */}
-            <div className="border-t border-slate-200 relative">
+            <div className="relative">
               <div className="absolute -top-10 left-6">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="h-20 w-20 rounded-full border-4 border-white bg-slate-100 overflow-hidden flex items-center justify-center cursor-pointer hover:bg-slate-200 transition-colors shadow-sm"
+                  className="flex h-20 w-20 cursor-pointer items-center justify-center overflow-hidden rounded-[1.4rem] border-4 border-card bg-sunken shadow-[0_8px_20px_-10px_rgba(92,58,28,0.5)] transition-colors duration-300 ease-soft hover:bg-line-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                   title="Upload icon"
                 >
                   {iconPreview ? (
                     <img src={iconPreview} className="h-full w-full object-cover" alt="icon" />
                   ) : (
-                    <ImageIcon className="h-6 w-6 text-slate-400" />
+                    <ImageIcon className="h-6 w-6 text-faint" strokeWidth={1.5} />
                   )}
                 </button>
               </div>
             </div>
 
             {/* Bottom section */}
-            <div className="pt-14 px-6 pb-6 space-y-3">
+            <div className="space-y-3 px-6 pb-6 pt-14">
               <Input
+                ref={nameRef}
                 placeholder="Name of collection"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -178,8 +188,8 @@ export function CollectionModal({ trigger, mode, collection }: Props) {
               {/* Color swatches */}
               <div className="flex items-center gap-2 flex-wrap pt-1">
                 <div className="relative h-8 w-8">
-                  <div className="h-8 w-8 rounded-full border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-400 pointer-events-none">
-                    <Plus className="h-4 w-4" />
+                  <div className="pointer-events-none flex h-8 w-8 items-center justify-center rounded-full border-2 border-dashed border-line-strong text-faint">
+                    <Plus className="h-4 w-4" strokeWidth={1.5} />
                   </div>
                   <input
                     type="color"
@@ -194,22 +204,23 @@ export function CollectionModal({ trigger, mode, collection }: Props) {
                     key={c}
                     type="button"
                     onClick={() => setColor(c)}
+                    aria-label={`Color ${c}`}
                     className={cn(
-                      "h-8 w-8 rounded-full transition-transform",
-                      color === c && "ring-2 ring-offset-2 ring-slate-400 scale-110"
+                      "h-8 w-8 rounded-full transition-transform duration-300 ease-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-card",
+                      color === c && "scale-110 ring-2 ring-ink/40 ring-offset-2 ring-offset-card"
                     )}
                     style={{ backgroundColor: c }}
                   />
                 ))}
               </div>
 
-              {error && <p className="text-xs text-red-500">{error}</p>}
+              {error && <p className="text-sm text-danger">{error}</p>}
               <Button
                 type="submit"
                 className="w-full !mt-5"
                 disabled={!name.trim() || loading}
               >
-                {mode === "create" ? "Create Collection" : "Save Changes"}
+                {mode === "create" ? "Create collection" : "Save changes"}
               </Button>
             </div>
           </form>
@@ -224,8 +235,8 @@ export function CollectionModal({ trigger, mode, collection }: Props) {
           />
 
           {/* Close button */}
-          <DialogPrimitive.Close className="absolute right-3 top-3 z-10 h-7 w-7 rounded-full bg-black/20 flex items-center justify-center hover:bg-black/30 transition-colors focus:outline-none">
-            <X className="h-3.5 w-3.5 text-white" />
+          <DialogPrimitive.Close className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-ink/20 text-card transition-colors duration-300 ease-soft hover:bg-ink/35 focus:outline-none focus-visible:ring-2 focus-visible:ring-card">
+            <X className="h-4 w-4" strokeWidth={1.5} />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
         </DialogPrimitive.Content>

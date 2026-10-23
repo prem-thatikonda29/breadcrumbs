@@ -1,11 +1,5 @@
-import { Geist, Instrument_Serif } from "next/font/google";
+import { Geist } from "next/font/google";
 import localFont from "next/font/local";
-
-export const instrumentSerif = Instrument_Serif({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-serif",
-});
 
 // Erode by Indian Type Foundry, self-hosted under the ITF Free Font License (assets/fonts/erode/FFL.txt).
 export const erode = localFont({

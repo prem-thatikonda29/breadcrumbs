@@ -48,12 +48,13 @@ export function AccountMenu({ name, image, onSignOut }: Props) {
         <DropdownMenu.Trigger asChild>
           <button
             title="Account"
-            className="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-[#F7F6F3] transition-colors"
+            aria-label="Account"
+            className="flex items-center rounded-xl p-1 transition-colors duration-300 ease-soft hover:bg-sunken focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             {image ? (
-              <Image src={image} alt={name ?? "User"} width={28} height={28} className="rounded-full" />
+              <Image src={image} alt={name ?? "User"} width={32} height={32} className="rounded-[0.7rem]" />
             ) : (
-              <div className="h-7 w-7 rounded-full bg-[#EAEAEA] flex items-center justify-center text-xs font-medium text-[#787774]">
+              <div className="flex h-8 w-8 items-center justify-center rounded-[0.7rem] bg-accent font-display text-[15px] text-card">
                 {name?.[0]?.toUpperCase() ?? "?"}
               </div>
             )}
@@ -63,20 +64,20 @@ export function AccountMenu({ name, image, onSignOut }: Props) {
           <DropdownMenu.Content
             align="end"
             sideOffset={6}
-            className="z-50 min-w-44 rounded-lg border border-[#EAEAEA] bg-white p-1 text-sm shadow-md"
+            className="z-50 min-w-48 rounded-2xl bg-card p-1.5 text-sm ring-1 ring-line shadow-[0_24px_48px_-24px_rgba(92,58,28,0.4)]"
           >
             <DropdownMenu.Item
               onSelect={() => onSignOut()}
-              className="flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-[#111111] outline-none data-[highlighted]:bg-[#F7F6F3]"
+              className="flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-ink outline-none data-[highlighted]:bg-sunken"
             >
-              <LogOut className="h-3.5 w-3.5 text-[#787774]" />
+              <LogOut className="h-3.5 w-3.5 text-faint" strokeWidth={1.5} />
               Sign out
             </DropdownMenu.Item>
             <DropdownMenu.Item
               onSelect={() => setConfirmOpen(true)}
-              className="flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-red-600 outline-none data-[highlighted]:bg-red-50"
+              className="flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-danger outline-none data-[highlighted]:bg-sunken"
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <Trash2 className="h-3.5 w-3.5" strokeWidth={1.5} />
               Delete account
             </DropdownMenu.Item>
           </DropdownMenu.Content>
@@ -88,11 +89,11 @@ export function AccountMenu({ name, image, onSignOut }: Props) {
           <DialogHeader>
             <DialogTitle>Delete your account?</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-[#787774] leading-relaxed">
+          <p className="text-[15px] leading-relaxed text-muted">
             This permanently deletes all your collections, saved links and learning notes. It
             can&apos;t be undone.
           </p>
-          {error && <p className="text-xs text-red-500">{error}</p>}
+          {error && <p className="text-sm text-danger">{error}</p>}
           <div className="mt-2 flex justify-end gap-2">
             <Button variant="outline" onClick={() => setConfirmOpen(false)} disabled={deleting}>
               Cancel
