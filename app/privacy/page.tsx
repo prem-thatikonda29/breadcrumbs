@@ -40,22 +40,22 @@ const sections = [
 
 export default function PrivacyPage() {
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-[100dvh] bg-paper">
       <div className="mx-auto max-w-2xl px-6 py-16">
-        <Link href="/" className="text-sm text-[#787774] hover:text-[#111111] transition-colors">
+        <Link href="/" className="text-sm text-faint transition-colors duration-300 ease-soft hover:text-ink">
           ← {siteConfig.name}
         </Link>
-        <h1 className="serif mt-6 text-4xl text-[#111111]">Privacy</h1>
-        <p className="mt-3 text-sm text-[#787774]">
+        <h1 className="serif mt-6 text-[44px] leading-none tracking-[-0.03em] text-ink">Privacy</h1>
+        <p className="mt-4 max-w-[56ch] text-[15px] leading-relaxed text-muted">
           {siteConfig.name} is a personal project. This page explains, in plain terms, what it
           stores and how to remove it.
         </p>
         {sections.map((section) => (
           <section key={section.heading} className="mt-10">
-            <h2 className="text-base font-semibold text-[#111111]">{section.heading}</h2>
+            <h2 className="serif text-[24px] tracking-[-0.02em] text-ink">{section.heading}</h2>
             <ul className="mt-3 space-y-2">
               {section.body.map((line) => (
-                <li key={line} className="text-sm leading-relaxed text-[#37352F]">
+                <li key={line} className="max-w-[62ch] text-[15px] leading-relaxed text-ink-2">
                   {line}
                 </li>
               ))}

@@ -37,19 +37,24 @@ export default function BookmarkletSavePage() {
         const data = await res.json();
         setStatus(data.alreadyExists ? "duplicate" : "success");
         setTimeout(() => window.close(), 1500);
+      } else if (res.status === 401) {
+        setStatus("unauthenticated");
       } else {
-        let msg = "An unexpected error occurred.";
-        try {
-          const data = await res.json();
-          if (typeof data?.error === "string") msg = data.error;
-        } catch {
-          // ignore parse errors
+        // 400s carry a readable reason (like a bad URL); anything else gets a plain message.
+        let msg = "Breadcrumbs couldn't save this page. Please try again.";
+        if (res.status === 400) {
+          try {
+            const data = await res.json();
+            if (typeof data?.error === "string") msg = data.error;
+          } catch {
+            // ignore parse errors
+          }
         }
         setErrorMsg(msg);
         setStatus("error");
       }
-    } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : "Network error. Please try again.");
+    } catch {
+      setErrorMsg("Couldn't reach Breadcrumbs. Check your connection and try again.");
       setStatus("error");
     }
   }
@@ -64,79 +69,77 @@ export default function BookmarkletSavePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, isLoading]);
 
+  const icon = "flex h-12 w-12 items-center justify-center rounded-full";
+
   return (
-    <div className="flex h-screen items-center justify-center bg-slate-50">
-      <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white px-8 py-10 shadow-sm text-center">
-        {(status === "idle" || status === "saving") && (
-          <div className="flex flex-col items-center gap-4">
-            <h1 className="text-xl font-bold text-slate-900">Breadcrumbs</h1>
-            <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
-            <p className="text-sm text-slate-500">Saving…</p>
-          </div>
-        )}
-
-        {status === "success" && (
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
-              <Check className="h-6 w-6 text-emerald-600" strokeWidth={2.5} />
+    <div className="flex min-h-[100dvh] items-center justify-center bg-paper p-4">
+      <div className="w-full max-w-sm rounded-[1.75rem] bg-ink/[0.03] p-1.5 ring-1 ring-line">
+        <div className="rounded-[calc(1.75rem-0.375rem)] bg-card px-8 py-10 text-center shadow-[0_24px_48px_-28px_rgba(92,58,28,0.4)]">
+          {(status === "idle" || status === "saving") && (
+            <div className="flex flex-col items-center gap-4" role="status">
+              <p className="serif text-[22px] tracking-[-0.02em] text-ink">Breadcrumbs</p>
+              <Loader2 className="h-7 w-7 animate-spin text-faint" strokeWidth={1.5} />
+              <p className="text-sm text-muted">Saving…</p>
             </div>
-            <p className="text-base font-semibold text-emerald-700">Saved to your inbox!</p>
-            {savedUrl && (
-              <p className="max-w-xs truncate text-xs text-slate-400" title={savedUrl}>
-                {savedUrl}
-              </p>
-            )}
-          </div>
-        )}
+          )}
 
-        {status === "duplicate" && (
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100">
-              <Check className="h-6 w-6 text-slate-400" strokeWidth={2.5} />
-            </div>
-            <p className="text-base font-semibold text-slate-700">Already in your inbox</p>
-            {savedUrl && (
-              <p className="max-w-xs truncate text-xs text-slate-400" title={savedUrl}>
-                {savedUrl}
-              </p>
-            )}
-          </div>
-        )}
-
-        {status === "error" && (
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-              <X className="h-6 w-6 text-red-500" strokeWidth={2.5} />
-            </div>
-            <div>
-              <p className="text-base font-semibold text-slate-900">Something went wrong</p>
-              {errorMsg && (
-                <p className="mt-1 text-sm text-slate-500">{errorMsg}</p>
+          {status === "success" && (
+            <div className="flex flex-col items-center gap-3" role="status">
+              <div className={`${icon} bg-accent text-card`}>
+                <Check className="h-6 w-6" strokeWidth={2} />
+              </div>
+              <p className="serif text-[22px] tracking-[-0.02em] text-ink">Saved to your library</p>
+              {savedUrl && (
+                <p className="max-w-xs truncate text-[13px] text-faint" title={savedUrl}>
+                  {savedUrl}
+                </p>
               )}
             </div>
-            <button
-              onClick={save}
-              className="mt-1 rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors"
-            >
-              Try again
-            </button>
-          </div>
-        )}
+          )}
 
-        {status === "unauthenticated" && (
-          <div className="flex flex-col items-center gap-4">
-            <h2 className="text-base font-semibold text-slate-900">Not signed in</h2>
-            <p className="text-sm text-slate-500 leading-relaxed">
-              Open Breadcrumbs and sign in first, then click the bookmarklet again.
-            </p>
-            <button
-              onClick={() => window.open("/app", "_blank")}
-              className="mt-1 text-sm font-medium text-slate-700 underline underline-offset-2 hover:text-slate-900 transition-colors"
-            >
-              Open Breadcrumbs →
-            </button>
-          </div>
-        )}
+          {status === "duplicate" && (
+            <div className="flex flex-col items-center gap-3" role="status">
+              <div className={`${icon} bg-sunken text-muted`}>
+                <Check className="h-6 w-6" strokeWidth={2} />
+              </div>
+              <p className="serif text-[22px] tracking-[-0.02em] text-ink">Already in your library</p>
+              {savedUrl && (
+                <p className="max-w-xs truncate text-[13px] text-faint" title={savedUrl}>
+                  {savedUrl}
+                </p>
+              )}
+            </div>
+          )}
+
+          {status === "error" && (
+            <div className="flex flex-col items-center gap-3" role="alert">
+              <div className={`${icon} bg-danger/10 text-danger`}>
+                <X className="h-6 w-6" strokeWidth={2} />
+              </div>
+              <p className="serif text-[22px] tracking-[-0.02em] text-ink">That didn&apos;t save</p>
+              {errorMsg && <p className="text-sm leading-relaxed text-muted">{errorMsg}</p>}
+              <button
+                onClick={save}
+                className="mt-2 rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-card transition-all duration-300 ease-soft hover:bg-ink-2 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              >
+                Try again
+              </button>
+            </div>
+          )}
+
+          {status === "unauthenticated" && (
+            <div className="flex flex-col items-center gap-3">
+              <p className="serif text-[22px] tracking-[-0.02em] text-ink">You&apos;re not signed in</p>
+              <p className="text-sm leading-relaxed text-muted">Sign in to Breadcrumbs in this browser, then click the bookmarklet again.</p>
+              <button
+                onClick={() => window.open("/sign-in", "_blank")}
+                className="mt-2 rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-card transition-all duration-300 ease-soft hover:bg-ink-2 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              >
+                Open Breadcrumbs
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
