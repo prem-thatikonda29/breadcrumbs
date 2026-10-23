@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { MAX_TEXT_LENGTH, assertMaxLength, assertRating } from "./validate";
 
 export const create = mutation({
   args: {
@@ -11,6 +12,10 @@ export const create = mutation({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    const entry = await ctx.db.get(args.entryId);
+    if (!entry || entry.userId !== userId) throw new Error("Not found");
+    assertMaxLength(args.content, MAX_TEXT_LENGTH, "Content");
+    assertRating(args.rating);
     const now = Date.now();
     return await ctx.db.insert("learnings", {
       entryId: args.entryId,
@@ -64,8 +69,9 @@ export const getUserLearnings = query({
         .withIndex("by_entryId", (q) => q.eq("entryId", entry._id))
         .order("asc")
         .collect();
-      if (learnings.length > 0) {
-        result.push({ entry, learnings });
+      const own = learnings.filter((l) => l.userId === userId);
+      if (own.length > 0) {
+        result.push({ entry, learnings: own });
       }
     }
     return result;
@@ -83,6 +89,8 @@ export const update = mutation({
     if (!userId) throw new Error("Not authenticated");
     const learning = await ctx.db.get(args.learningId);
     if (!learning || learning.userId !== userId) throw new Error("Not found");
+    assertMaxLength(args.content, MAX_TEXT_LENGTH, "Content");
+    assertRating(args.rating);
     await ctx.db.patch(args.learningId, {
       content: args.content,
       rating: args.rating,

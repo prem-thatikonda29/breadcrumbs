@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
   }
 
   const resolvedTitle =
-    typeof title === "string" && title.trim() !== "" ? title.trim() : url;
+    (typeof title === "string" && title.trim() !== "" ? title.trim() : url).slice(0, 500);
 
   const client = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
   client.setAuth(token);
