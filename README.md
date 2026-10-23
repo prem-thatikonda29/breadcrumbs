@@ -1,73 +1,51 @@
 # Breadcrumbs
 
-A personal knowledge tool — save links, write notes, and export collections as Markdown.
+A personal read-later tracker. Save links from anywhere, mark them explored as you get through them, and keep short notes on what you learned.
 
 **Live at:** [breadcrumbs-rose.vercel.app](https://breadcrumbs-rose.vercel.app)
 
+## Why I built it
+
+I kept saving links and never coming back to them. Breadcrumbs is my take on a read-later list that tracks whether you actually got through each link (*explored* or not) and what you took away from it. It's a personal project and portfolio piece, not a commercial product.
+
 ## Features
 
-- **One-click bookmarklet** — Save any page from any browser. No extension needed.
-- **Collections** — Group links by topic, project, or goal. Color-code and archive when done.
-- **Learning notes** — Write insights per link, rate 1–5 stars to surface your best finds.
-- **Markdown export** — Export a collection's notes as clean Markdown, ready for your blog.
-- **Explore tracking** — Mark links as explored, filter by status, work through your library at your own pace.
-- **Google auth** — Sign in with Google. Your data, your library.
+- **Save from anywhere:** a one-click bookmarklet on desktop, and a PWA share target so Breadcrumbs shows up in the phone share sheet.
+- **Library:** unexplored links first, with a toggle to show explored ones. Search covers titles and note contents. Select several links to mark them explored, move them or delete them.
+- **Collections:** group links by topic with a color, an icon and a description. Drag to reorder links, and archive a collection when you're done with it.
+- **Learning notes:** notes on each link, each with a 1–5 star rating.
+- **Markdown export:** export a whole collection, or a single link's notes, as Markdown.
+- **Your data stays yours:** Google sign-in, only your account can read your data, and you can delete your account in one step. See the [privacy page](https://breadcrumbs-rose.vercel.app/privacy).
 
-## Tech Stack
+## How it's built
 
-- Next.js 16 (App Router) + React 19
-- Convex (type-safe backend)
-- Tailwind CSS v4
-- Radix UI (accessible components)
-- Framer Motion (animations)
-- dnd-kit (drag and drop)
+- **Next.js 16** (App Router) and **React 19** on Vercel. Route protection lives in `proxy.ts`, which replaces `middleware.ts` in Next 16.
+- **Convex** for the database, backend functions, file storage and scheduled jobs. There are no separate API routes; the frontend calls typed Convex functions directly. The one exception is `app/api/bookmarklet`, which the bookmarklet pop-up posts to.
+- **`@convex-dev/auth`** with Google OAuth.
+- **Tailwind CSS v4**, **Radix UI**, **Framer Motion** and **dnd-kit** for the UI.
 
-## Getting Started
+Things worth looking at:
 
-First-time setup requires two terminals running concurrently:
+- **Ownership checks on every function.** Each query and mutation resolves the signed-in user and checks that every document it touches is theirs, including referenced ones. For example, adding a note checks that the link is yours, and moving a link checks that the target collection is yours.
+- **Input validation** (`convex/validate.ts`):
+  - links must be http or https;
+  - ratings are whole numbers from 1 to 5;
+  - text fields have length limits;
+  - collection icons must be new image uploads under 1 MB.
+- **Storage hygiene.** Replacing or deleting a collection icon deletes the file. A daily scheduled job (`convex/crons.ts`) removes uploads that were never attached to a collection.
+- **Tests.** `convex-test` and Vitest cover the ownership rules, the validation, icon handling and account deletion (`convex/*.test.ts`).
+- **CI.** GitHub Actions runs lint, type-checks for the app and the Convex functions, and the tests on every PR.
+
+## Getting started
+
+Run two terminals:
 
 ```sh
-# Terminal 1: Convex backend
-npx convex dev
-
-# Terminal 2: Next.js frontend
-npm run dev
+npx convex dev   # Convex backend: creates the project on first run and watches convex/
+npm run dev      # Next.js on http://localhost:3000
 ```
 
-The first `npx convex dev` run will authenticate and create your Convex project interactively.
-
-Open [http://localhost:3000](http://localhost:3000) to see the app.
-
-## Project Structure
-
-```
-app/                  # Next.js App Router pages
-  page.tsx            # / — Dashboard inbox (unexplored entries)
-  collections/[id]/   # Collection detail
-  entries/[id]/       # Entry detail + learning notes
-  export/             # Markdown export
-  sign-in/            # Google OAuth sign-in
-components/           # Shared React components
-  ui/                 # Base UI primitives (Button, Dialog, etc.)
-convex/               # Backend logic (all typed TypeScript)
-  schema.ts           # Table definitions and indexes
-  collections.ts      # Collections CRUD
-  entries.ts          # Entries CRUD + markExplored
-  learnings.ts        # Learning notes CRUD
-lib/                  # Shared utilities
-```
-
-## Data Model
-
-Three tables with a one-to-many hierarchy:
-
-- **collections** — `userId, name, color?, createdAt`
-- **entries** — `userId, collectionId, title, url, status, dateAdded, dateExplored?`
-- **learnings** — `entryId, userId, content, rating? (1–5), createdAt, updatedAt`
-
-## Auth Setup
-
-Google OAuth credentials are configured in the Convex dashboard:
+Set these in the Convex dashboard's environment variables:
 
 ```
 AUTH_GOOGLE_ID=...
@@ -75,14 +53,48 @@ AUTH_GOOGLE_SECRET=...
 SITE_URL=http://localhost:3000
 ```
 
+### Checks
+
+```sh
+npm run lint
+npx tsc --noEmit -p . && npx tsc --noEmit -p convex
+npm test
+```
+
+## Project structure
+
+```
+proxy.ts              # Auth redirects (Next 16 proxy, formerly middleware)
+app/
+  page.tsx            # / landing page
+  app/page.tsx        # /app library (signed in)
+  collections/[id]/   # Collection detail, drag-to-reorder
+  entries/[id]/       # Link detail and learning notes
+  export/             # Markdown export
+  bookmarklet/        # Bookmarklet install page, plus the save pop-up
+  api/bookmarklet/    # POST endpoint the bookmarklet pop-up calls
+  privacy/            # Privacy page
+  sign-in/            # Google sign-in
+components/           # App components; ui/ holds base primitives
+convex/
+  schema.ts           # Tables and indexes
+  auth.ts             # Google provider
+  collections.ts      # Collections, icons, archive
+  entries.ts          # Links: CRUD, explored state, bulk actions, search
+  learnings.ts        # Learning notes
+  users.ts            # Current user, account deletion
+  storage.ts          # Upload URLs, orphaned-file cleanup
+  crons.ts            # Daily cleanup job
+  validate.ts         # Shared validation and ownership helpers
+```
+
 ## Deploy
 
 ```sh
-npx convex deploy   # Deploy backend
-# Deploy frontend to Vercel
+npx convex deploy   # backend
 ```
 
-Set `NEXT_PUBLIC_SITE_URL` (e.g. `https://breadcrumbs-rose.vercel.app`) in Vercel so canonical URLs, the sitemap, and Open Graph tags point at the right domain. It defaults to the production URL when unset.
+The frontend deploys to Vercel from `main`. Set `NEXT_PUBLIC_SITE_URL` (for example `https://breadcrumbs-rose.vercel.app`) so canonical URLs, the sitemap and Open Graph tags use the right domain.
 
 ## License
 

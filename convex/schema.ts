@@ -13,7 +13,9 @@ export default defineSchema({
     iconStorageId: v.optional(v.id("_storage")),
     archived: v.optional(v.boolean()),
     createdAt: v.number(),
-  }).index("by_userId", ["userId"]),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_iconStorageId", ["iconStorageId"]),
 
   entries: defineTable({
     userId: v.id("users"),

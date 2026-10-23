@@ -1,10 +1,12 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, QueryCtx } from "./_generated/server";
+import { Doc } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { assertNewIcon } from "./validate";
 
-async function withIconUrls(ctx: any, collections: any[]) {
+async function withIconUrls(ctx: QueryCtx, collections: Doc<"collections">[]) {
   return await Promise.all(
-    collections.map(async (col: any) => ({
+    collections.map(async (col) => ({
       ...col,
       iconUrl: col.iconStorageId ? await ctx.storage.getUrl(col.iconStorageId) : null,
     }))
@@ -73,6 +75,7 @@ export const create = mutation({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    if (args.iconStorageId) await assertNewIcon(ctx, args.iconStorageId);
     return await ctx.db.insert("collections", {
       userId,
       name: args.name,
@@ -97,6 +100,10 @@ export const update = mutation({
     if (!userId) throw new Error("Not authenticated");
     const collection = await ctx.db.get(args.collectionId);
     if (!collection || collection.userId !== userId) throw new Error("Not found");
+    if (args.iconStorageId !== collection.iconStorageId) {
+      if (args.iconStorageId) await assertNewIcon(ctx, args.iconStorageId);
+      if (collection.iconStorageId) await ctx.storage.delete(collection.iconStorageId);
+    }
     await ctx.db.patch(args.collectionId, {
       name: args.name,
       color: args.color,
@@ -130,6 +137,7 @@ export const remove = mutation({
       await ctx.db.delete(entry._id);
     }
 
+    if (collection.iconStorageId) await ctx.storage.delete(collection.iconStorageId);
     await ctx.db.delete(args.collectionId);
   },
 });

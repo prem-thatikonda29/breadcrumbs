@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useSyncExternalStore } from "react";
 import {
   motion,
   useScroll,
@@ -42,10 +42,11 @@ const stagger = {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
+const subscribeNoop = () => () => {};
+
 // SVG fractal noise grain — client-only to avoid SSR/hydration mismatch
 function NoiseOverlay() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); }, []);
+  const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
   if (!mounted) return null;
 
   return (
@@ -217,7 +218,7 @@ export default function LandingPage() {
           style={{ lineHeight: 1.04, letterSpacing: "-0.025em" }}
         >
           A trail of everything<br />
-          you've learned.
+          you&apos;ve learned.
         </motion.h1>
 
         {/* Subtext */}
@@ -227,7 +228,7 @@ export default function LandingPage() {
           transition={{ duration: 0.6, ease, delay: 0.15 }}
           className="text-base text-[#787774] leading-relaxed max-w-md mb-10"
         >
-          Save links, track what you've explored, write notes on what matters.
+          Save links, track what you&apos;ve explored, write notes on what matters.
           Your reading list, finally turned into something useful.
         </motion.p>
 
@@ -588,7 +589,12 @@ export default function LandingPage() {
       <footer className="border-t border-[#1E1E1E] bg-[#111111]">
         <div className="max-w-5xl mx-auto px-6 py-6 flex items-center justify-between">
           <span className="text-xs text-[#888888] font-medium">Breadcrumbs</span>
-          <span className="text-xs text-[#888888]">Built for curious minds.</span>
+          <div className="flex items-center gap-4">
+            <Link href="/privacy" className="text-xs text-[#888888] hover:text-white transition-colors">
+              Privacy
+            </Link>
+            <span className="text-xs text-[#888888]">Built for curious minds.</span>
+          </div>
         </div>
       </footer>
 

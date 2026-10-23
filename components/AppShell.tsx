@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { Sidebar } from "./Sidebar";
 import { Menu } from "lucide-react";
@@ -10,9 +10,11 @@ export function AppShell({ children, topbarRight }: { children: React.ReactNode;
   const pathname = usePathname();
 
   // Close sidebar whenever the route changes (user tapped a nav link)
-  useEffect(() => {
+  const [lastPathname, setLastPathname] = useState(pathname);
+  if (pathname !== lastPathname) {
+    setLastPathname(pathname);
     setMobileOpen(false);
-  }, [pathname]);
+  }
 
   return (
     <div className="flex h-dvh overflow-hidden">

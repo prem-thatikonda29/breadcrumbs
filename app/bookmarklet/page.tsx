@@ -3,20 +3,26 @@
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { AppShell } from "@/components/AppShell";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Bookmark, Copy, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+const subscribeNoop = () => () => {};
+
+function bookmarkletCode(origin: string) {
+  return `javascript:(function(){var u=encodeURIComponent(location.href);var t=encodeURIComponent(document.title);window.open('${origin}/bookmarklet/save?url='+u+'&title='+t,'breadcrumbs','width=480,height=320,resizable=no,scrollbars=no');})();`;
+}
 
 export default function BookmarkletPage() {
   const _collections = useQuery(api.collections.list);
   const anchorContainerRef = useRef<HTMLDivElement>(null);
-  const [rawCode, setRawCode] = useState<string>("");
+  const origin = useSyncExternalStore(subscribeNoop, () => window.location.origin, () => "");
+  const rawCode = origin ? bookmarkletCode(origin) : "";
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    const origin = window.location.origin;
-    const js =
-      `javascript:(function(){var u=encodeURIComponent(location.href);var t=encodeURIComponent(document.title);window.open('${origin}/bookmarklet/save?url='+u+'&title='+t,'breadcrumbs','width=480,height=320,resizable=no,scrollbars=no');})();`;
+    if (!rawCode) return;
+    const js = rawCode;
 
     // Build the anchor entirely outside React — React 19 blocks javascript: URLs
     // at the synthetic event level even with preventDefault, so we bypass it entirely.
@@ -50,9 +56,7 @@ export default function BookmarkletPage() {
       a.appendChild(text);
       anchorContainerRef.current.appendChild(a);
     }
-
-    setRawCode(js);
-  }, []);
+  }, [rawCode]);
 
   async function handleCopyCode() {
     await navigator.clipboard.writeText(rawCode);
@@ -117,7 +121,7 @@ export default function BookmarkletPage() {
             </div>
             <div className="p-5">
               <video
-                src="/bookmarklet-demo.mov"
+                src="/bookmarklet-demo.mp4"
                 controls
                 playsInline
                 className="w-full rounded-lg"
