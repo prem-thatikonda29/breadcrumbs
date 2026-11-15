@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const result = await client.mutation(api.entries.create, { title: resolvedTitle, url });
-    return NextResponse.json({ ok: true, alreadyExists: result.alreadyExists });
+    return NextResponse.json({ ok: true, id: result.id, alreadyExists: result.alreadyExists });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });

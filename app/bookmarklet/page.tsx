@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 const subscribeNoop = () => () => {};
 
 function bookmarkletCode(origin: string) {
-  return `javascript:(function(){var u=encodeURIComponent(location.href);var t=encodeURIComponent(document.title);window.open('${origin}/bookmarklet/save?url='+u+'&title='+t,'breadcrumbs','width=480,height=320,resizable=no,scrollbars=no');})();`;
+  return `javascript:(function(){var u=encodeURIComponent(location.href);var t=encodeURIComponent(document.title);window.open('${origin}/bookmarklet/save?url='+u+'&title='+t,'breadcrumbs','width=480,height=600,resizable=yes,scrollbars=yes');})();`;
 }
 
 export default function BookmarkletPage() {
