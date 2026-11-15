@@ -9,8 +9,8 @@ import { ArrowUpRight, Check, FolderInput, MoreHorizontal, RotateCcw, Trash2 } f
 import { cn, getDomain, timeAgo } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { CollectionPicker } from "@/components/CollectionPicker";
 import { useState } from "react";
 import { collectionColor } from "@/lib/collection-colors";
 
@@ -32,18 +32,21 @@ export function EntryCard({ entry, showCollection, selectable, selected, onToggl
   const removeEntry = useMutation(api.entries.remove);
   const moveToCollection = useMutation(api.entries.moveToCollection);
   const [moveOpen, setMoveOpen] = useState(false);
-  const [moveTarget, setMoveTarget] = useState("");
+  const [moving, setMoving] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   const collection = collections?.find((c) => c._id === entry.collectionId);
   const isExplored = entry.status === "explored";
   const otherCollections = collections?.filter((c) => c._id !== entry.collectionId) ?? [];
 
-  async function handleMove() {
-    if (!moveTarget) return;
-    await moveToCollection({ entryId: entry._id, collectionId: moveTarget as Id<"collections"> });
-    setMoveOpen(false);
-    setMoveTarget("");
+  async function handleMove(collectionId: Id<"collections">) {
+    setMoving(true);
+    try {
+      await moveToCollection({ entryId: entry._id, collectionId });
+      setMoveOpen(false);
+    } finally {
+      setMoving(false);
+    }
   }
 
   return (
@@ -162,26 +165,7 @@ export function EntryCard({ entry, showCollection, selectable, selected, onToggl
           <DialogHeader>
             <DialogTitle>Move to a collection</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <Select value={moveTarget} onValueChange={setMoveTarget}>
-              <SelectTrigger>
-                <SelectValue placeholder="Pick a collection" />
-              </SelectTrigger>
-              <SelectContent>
-                {otherCollections.map((col) => (
-                  <SelectItem key={col._id} value={col._id}>
-                    <span className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: collectionColor(col.color) }} />
-                      {col.name}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button className="w-full" disabled={!moveTarget} onClick={handleMove}>
-              Move
-            </Button>
-          </div>
+          <CollectionPicker collections={otherCollections} onPick={(c) => handleMove(c._id)} disabled={moving} />
         </DialogContent>
       </Dialog>
 

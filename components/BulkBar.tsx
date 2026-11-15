@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { Check, FolderInput, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
-import { collectionColor } from "@/lib/collection-colors";
+import { CollectionPicker } from "@/components/CollectionPicker";
 
 interface Props {
   count: number;
@@ -18,7 +18,18 @@ interface Props {
 
 // Floating action bar for the entries currently selected in a list.
 export function BulkBar({ count, collections, onMarkExplored, onMove, onDelete, onClear }: Props) {
-  const [moveTarget, setMoveTarget] = useState("");
+  const [moveOpen, setMoveOpen] = useState(false);
+  const [moving, setMoving] = useState(false);
+
+  async function handleMove(collectionId: string) {
+    setMoving(true);
+    try {
+      await onMove(collectionId);
+      setMoveOpen(false);
+    } finally {
+      setMoving(false);
+    }
+  }
   const [confirmOpen, setConfirmOpen] = useState(false);
   const noun = count === 1 ? "link" : "links";
 
@@ -34,36 +45,10 @@ export function BulkBar({ count, collections, onMarkExplored, onMove, onDelete, 
             </Button>
           )}
           {(collections?.length ?? 0) > 0 && (
-            <div className="flex items-center gap-1.5">
-              <Select value={moveTarget} onValueChange={setMoveTarget}>
-                <SelectTrigger className="h-8 w-36 bg-card/10 text-[13px] text-card ring-card/15 data-[placeholder]:text-card/60">
-                  <SelectValue placeholder="Move to…" />
-                </SelectTrigger>
-                <SelectContent>
-                  {collections!.map((col) => (
-                    <SelectItem key={col._id} value={col._id}>
-                      <span className="flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: collectionColor(col.color) }} />
-                        {col.name}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                size="sm"
-                variant="ghost"
-                disabled={!moveTarget}
-                onClick={async () => {
-                  await onMove(moveTarget);
-                  setMoveTarget("");
-                }}
-                className="text-card hover:bg-card/10 hover:text-card"
-              >
-                <FolderInput className="h-3.5 w-3.5" strokeWidth={1.5} />
-                Move
-              </Button>
-            </div>
+            <Button size="sm" variant="ghost" onClick={() => setMoveOpen(true)} className="text-card hover:bg-card/10 hover:text-card">
+              <FolderInput className="h-3.5 w-3.5" strokeWidth={1.5} />
+              Move to…
+            </Button>
           )}
           <Button size="sm" variant="ghost" onClick={() => setConfirmOpen(true)} className="text-[#F2A38C] hover:bg-card/10 hover:text-[#F7BBA9]">
             <Trash2 className="h-3.5 w-3.5" strokeWidth={1.5} />
@@ -77,6 +62,17 @@ export function BulkBar({ count, collections, onMarkExplored, onMove, onDelete, 
           </button>
         </div>
       </div>
+
+      <Dialog open={moveOpen} onOpenChange={setMoveOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Move {count} {noun} to a collection
+            </DialogTitle>
+          </DialogHeader>
+          <CollectionPicker collections={collections ?? []} onPick={(c) => handleMove(c._id)} disabled={moving} />
+        </DialogContent>
+      </Dialog>
 
       <ConfirmDialog
         open={confirmOpen}
