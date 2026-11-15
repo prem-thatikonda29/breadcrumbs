@@ -22,6 +22,7 @@ const sections = [
     body: [
       "Your data is stored with Convex, which runs the app's database, file storage and backend. The website is hosted on Vercel.",
       "Your data is only readable by your account. There's no public profile or sharing.",
+      "To show each saved link's site icon, our server asks DuckDuckGo's icon service for that site's domain (only the domain, never the full link or anything about you). Your browser never contacts DuckDuckGo directly.",
     ],
   },
   {

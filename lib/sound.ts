@@ -7,11 +7,18 @@
 // - The on/off preference lives in localStorage and applies everywhere at once,
 //   including the bookmarklet pop-up (same origin).
 
-import { createUISFX, type CueName, type PlayingSFX, type UISFXOptions, type UISFXPlayer } from "uisfx";
+import { createUISFX, getCue, type CueName, type PlayingSFX, type UISFXOptions, type UISFXPlayer } from "uisfx";
 
 export const SOUND_PACK = "zen" as const;
 export const SOUND_PREF_KEY = "breadcrumbs:sound";
-export const DEFAULT_VOLUME = 0.7;
+export const DEFAULT_VOLUME = 1;
+// Zen renders quietly (peak ~0.28) and uisfx's per-cue defaults are ~0.2, which left cues
+// around -27 dBFS. Scale each cue's default up; peaks stay near -13 dBFS, well clear of clipping.
+export const CUE_GAIN = 3.5;
+
+export function cueVolume(cue: CueName): number {
+  return Math.min(1, getCue(cue).defaultVolume * CUE_GAIN);
+}
 
 /** Product events that make a sound, and the cue each one uses. */
 export const SOUND_CUES = {
@@ -44,9 +51,10 @@ function emit() {
 function getPlayer(): UISFXPlayer | null {
   if (typeof window === "undefined") return null;
   if (!player) {
-    // The player reads saved volume/enabled from SOUND_PREF_KEY and writes changes back.
-    // Only the pack is forced; volume and enabled fall back to defaults when nothing is saved.
-    let saved: { volume?: unknown; enabled?: unknown } = {};
+    // The player reads the saved on/off state from SOUND_PREF_KEY and writes changes back.
+    // Pack and volume are always set here (there's no volume control), so an older saved
+    // volume can't keep sounds quiet.
+    let saved: { enabled?: unknown } = {};
     try {
       saved = JSON.parse(window.localStorage.getItem(SOUND_PREF_KEY) ?? "{}");
     } catch {
@@ -54,7 +62,7 @@ function getPlayer(): UISFXPlayer | null {
     }
     player = factory({
       pack: SOUND_PACK,
-      volume: typeof saved.volume === "number" ? saved.volume : DEFAULT_VOLUME,
+      volume: DEFAULT_VOLUME,
       enabled: typeof saved.enabled === "boolean" ? saved.enabled : true,
       preferences: { key: SOUND_PREF_KEY },
     });
@@ -99,7 +107,8 @@ export function initSound(): () => void {
 export function playSound(event: SoundEvent): PlayingSFX | null {
   const p = getPlayer();
   if (!p || !unlocked || !p.isEnabled()) return null;
-  return p.play(SOUND_CUES[event]);
+  const cue = SOUND_CUES[event];
+  return p.play(cue, { volume: cueVolume(cue) });
 }
 
 export function isSoundEnabled(): boolean {
@@ -117,7 +126,7 @@ export function setSoundEnabled(enabled: boolean) {
     p.setEnabled(true);
     // This runs inside the click that turned sound on, so it also counts as the unlock gesture.
     if (!unlocked) handleGesture();
-    p.play(SOUND_CUES["sound-on"]);
+    p.play(SOUND_CUES["sound-on"], { volume: cueVolume(SOUND_CUES["sound-on"]) });
   }
   emit();
 }

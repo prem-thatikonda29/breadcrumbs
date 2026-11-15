@@ -4,6 +4,7 @@ import {
   SOUND_CUES,
   SOUND_PACK,
   SOUND_PREF_KEY,
+  cueVolume,
   __setSoundFactory,
   disposeSound,
   initSound,
@@ -100,7 +101,7 @@ describe("cue mapping", () => {
       fakes[0].player.play.mockClear();
       playSound(event as SoundEvent);
       expect(fakes[0].player.play).toHaveBeenCalledTimes(1);
-      expect(fakes[0].player.play).toHaveBeenCalledWith(cue);
+      expect(fakes[0].player.play).toHaveBeenCalledWith(cue, { volume: cueVolume(cue) });
     }
   });
 
@@ -109,7 +110,14 @@ describe("cue mapping", () => {
     expect(lastOptions?.pack).toBe(SOUND_PACK);
     expect(SOUND_PACK).toBe("zen");
     expect(lastOptions?.preferences?.key).toBe(SOUND_PREF_KEY);
-    expect(lastOptions?.volume).toBe(0.7);
+    expect(lastOptions?.volume).toBe(1);
+  });
+
+  test("cue volumes are boosted but never above 1", () => {
+    for (const cue of Object.values(SOUND_CUES)) {
+      expect(cueVolume(cue)).toBeGreaterThan(0.5);
+      expect(cueVolume(cue)).toBeLessThanOrEqual(1);
+    }
   });
 });
 
@@ -174,11 +182,11 @@ describe("sound preference", () => {
     expect(isSoundEnabled()).toBe(false);
   });
 
-  test("a saved 'off' preference is honoured on the next load", async () => {
+  test("a saved 'off' preference is honoured on the next load, but an old quiet volume is not", async () => {
     storage.set(SOUND_PREF_KEY, JSON.stringify({ pack: "zen", volume: 0.4, enabled: false }));
     isSoundEnabled();
     expect(lastOptions?.enabled).toBe(false);
-    expect(lastOptions?.volume).toBe(0.4);
+    expect(lastOptions?.volume).toBe(1);
     initSound();
     gesture();
     await flush();
@@ -189,7 +197,7 @@ describe("sound preference", () => {
     storage.set(SOUND_PREF_KEY, JSON.stringify({ enabled: false }));
     setSoundEnabled(true);
     expect(fakes[0].player.unlock).toHaveBeenCalledTimes(1);
-    expect(fakes[0].player.play).toHaveBeenCalledWith("toggle-on");
+    expect(fakes[0].player.play).toHaveBeenCalledWith("toggle-on", { volume: cueVolume("toggle-on") });
     await flush();
     expect(playSound("link-saved")).not.toBeNull();
   });
@@ -197,7 +205,7 @@ describe("sound preference", () => {
   test("corrupt stored preferences fall back to defaults", () => {
     storage.set(SOUND_PREF_KEY, "{not json");
     expect(isSoundEnabled()).toBe(true);
-    expect(lastOptions?.volume).toBe(0.7);
+    expect(lastOptions?.volume).toBe(1);
   });
 });
 

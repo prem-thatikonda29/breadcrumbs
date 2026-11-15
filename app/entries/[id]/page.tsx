@@ -21,6 +21,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { Skeleton } from "@/components/Skeleton";
 import Link from "next/link";
 import { useState } from "react";
+import { Favicon } from "@/components/Favicon";
 import { cn, formatDate, formatDateTime, getDomain, starsFromRating, timeAgo } from "@/lib/utils";
 import { collectionColor } from "@/lib/collection-colors";
 
@@ -225,6 +226,7 @@ export default function EntryPage() {
               </form>
             ) : (
               <>
+                <Favicon url={entry.url} size={40} className={cn("mb-4", isExplored && "opacity-50 grayscale")} />
                 <div className="flex items-start justify-between gap-3">
                   <h1
                     className={cn(

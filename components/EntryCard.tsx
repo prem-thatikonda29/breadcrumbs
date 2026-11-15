@@ -13,6 +13,7 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { CollectionPicker } from "@/components/CollectionPicker";
 import { useState } from "react";
 import { collectionColor } from "@/lib/collection-colors";
+import { Favicon } from "@/components/Favicon";
 
 interface Props {
   entry: Doc<"entries">;
@@ -75,6 +76,8 @@ export function EntryCard({ entry, showCollection, selectable, selected, onToggl
             {selected && <Check className="h-3 w-3" strokeWidth={2.5} />}
           </button>
         )}
+
+        <Favicon url={entry.url} size={20} className={cn("mt-[3px]", isExplored && "opacity-50 grayscale")} />
 
         <div className="min-w-0 flex-1">
           <Link
