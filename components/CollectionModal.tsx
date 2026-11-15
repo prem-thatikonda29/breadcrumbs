@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { COLLECTION_COLORS, collectionColor } from "@/lib/collection-colors";
+import { playSound } from "@/lib/sound";
+import { toast } from "@/components/ui/toast";
 
 // Matches MAX_ICON_BYTES in convex/validate.ts, which enforces it server-side.
 const MAX_ICON_BYTES = 1024 * 1024;
@@ -121,8 +123,14 @@ export function CollectionModal({ trigger, open: openProp, onOpenChange, mode, c
         });
       }
       setOpen(false);
+      if (mode === "create") {
+        // The modal closes, so confirm the new collection.
+        playSound("collection-created");
+        toast("Collection created");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
+      playSound("collection-error");
     } finally {
       setLoading(false);
     }

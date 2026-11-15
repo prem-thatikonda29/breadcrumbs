@@ -7,6 +7,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { CollectionPicker } from "@/components/CollectionPicker";
 import { collectionColor } from "@/lib/collection-colors";
+import { playSound } from "@/lib/sound";
 
 type Status = "idle" | "saving" | "success" | "duplicate" | "error" | "unauthenticated";
 
@@ -88,8 +89,12 @@ export default function BookmarkletSavePage() {
     try {
       await moveToCollection({ entryId, collectionId: collection._id });
       setFiledTo(collection.name);
+      // The pop-up already shows where it went; the sound confirms the drop.
+      // (The automatic save on open gets no sound: browsers block audio before a click.)
+      playSound("link-filed");
     } catch {
       setFileError("Couldn't add it to that collection. Try again.");
+      playSound("link-file-error");
     } finally {
       setFiling(false);
     }

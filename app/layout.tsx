@@ -3,6 +3,8 @@ import "./globals.css";
 import { ConvexAuthNextjsServerProvider } from "@convex-dev/auth/nextjs/server";
 import { ConvexClientProvider } from "@/components/ConvexClientProvider";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { SoundInit } from "@/components/SoundProvider";
+import { Toaster } from "@/components/ui/toast";
 import { erode, geist } from "@/lib/fonts";
 import { siteConfig } from "@/lib/site";
 
@@ -65,6 +67,8 @@ export default async function RootLayout({
           <ConvexClientProvider>
             {children}
             <ServiceWorkerRegister />
+            <SoundInit />
+            <Toaster />
           </ConvexClientProvider>
         </body>
       </html>

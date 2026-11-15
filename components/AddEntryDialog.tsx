@@ -25,6 +25,8 @@ import { cn } from "@/lib/utils";
 import { COLLECTION_COLORS } from "@/lib/collection-colors";
 import { Textarea } from "@/components/ui/textarea";
 import { collectionColor } from "@/lib/collection-colors";
+import { playSound } from "@/lib/sound";
+import { toast } from "@/components/ui/toast";
 
 const COLORS = COLLECTION_COLORS;
 
@@ -74,12 +76,18 @@ export function AddEntryDialog({ defaultCollectionId }: Props) {
         notes: notes.trim() || undefined,
       });
       if (result.alreadyExists) {
+        // The inline message already says so; the sound just marks it.
         setError("That link is already in your library.");
+        playSound("link-duplicate");
         return;
       }
       reset();
       setOpen(false);
+      // The dialog closes, so nothing else on screen confirms the save.
+      playSound("link-saved");
+      toast("Link saved");
     } catch (err) {
+      playSound("link-error");
       const message = err instanceof Error ? err.message : "";
       setError(
         message.includes("http")
@@ -93,7 +101,16 @@ export function AddEntryDialog({ defaultCollectionId }: Props) {
 
   async function handleCreateCollection() {
     if (!newName.trim()) return;
-    const id = await createCollection({ name: newName.trim(), color: newColor });
+    let id: Id<"collections">;
+    try {
+      id = await createCollection({ name: newName.trim(), color: newColor });
+    } catch {
+      setError("Couldn't create that collection. Please try again.");
+      playSound("collection-error");
+      return;
+    }
+    // The new collection shows up selected in the picker, so no toast.
+    playSound("collection-created");
     setCollectionId(id);
     setCreatingNew(false);
     setNewName("");
